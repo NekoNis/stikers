@@ -1,32 +1,81 @@
 <script setup>
 import Item from './Object.vue'
-import {onMounted, ref} from "vue";
+import {onMounted, ref, reactive} from "vue";
 
-const objects = ref()
-const count = ref(1)
-const loaded = ref(false)
-function countMinusFunc(event) {if (event) {if (count.value != 0) {count.value--}}}
 /*
 изучить:
   жизненный цикл компонентов
   react.js
+  .map() (js)
+  reactive (vue)
+  ! canvas
+  async await (js)
+  arrow functions
+  ES
+  чистые функции
+  javascript - arrays
 */
 
-onMounted(() => {
-  count.value;
+const objects = reactive([
+    {uniqueID: ref(), parentID: ref(), url: ref(""), size: {x: ref(), y: ref()}}
+])
 
-  let inputFiles = document.getElementById("input-file")
-  inputFiles.addEventListener('change', event => {
-    // Очищаем body от возможных старых имён файлов
-    [...document.body.children].slice(1).map(i=>i.remove());
-    // Добавляем новые имена файлов
-    [...event.target.files].map(i=>{
-      let newp = document.createElement('p');
-      newp.innerText = i.name;
-      document.body.append(newp);
-    })
-  });
-})
+// const exportData = reactive(
+//     [{id: ref(), size: {x: sizeImage[0].value, y: sizeImage[1].value}}],
+//     {size: {x: sizeCanvas[0].value, y: sizeCanvas[1].value}}, {space: space.value}
+// )
+
+let space = ref(0)
+let sizeImage = ref([1, 1])
+let sizeCanvas = ref([1, 1])
+let count = ref(1)
+let id = ref(1)
+const fileName = ref('')
+const loaded = ref(false)
+function countMinusFunc(event) {
+  if (event) {
+    if (count.value != 0) {
+      count.value--
+    }
+  }
+}
+
+function countPlusFunc(event) {
+  if (event) {
+    count.value++
+  }
+}
+
+//onMounted(() => {
+
+  // const inputFile = document.getElementById("input-file")
+  //
+  // inputFile.addEventListener('change', event => {
+  //
+  // })
+
+
+
+
+
+//     inputFile.addEventListener('change', event => {
+//
+//       let file = inputFile.files[0];
+//       const image = new Image();
+//       image.src = window.URL.createObjectURL();
+//       console.log(image.src);
+//       // Добавляем новые имена файлов
+//       [...event.target.files].map(nameFile=>{
+//         exportData.push({
+//           id: id.value,
+//           size: {
+//             x: 1,
+//             y: 1
+//           }
+//         });
+//     })
+//   });
+// })
 
 </script>
 
@@ -35,7 +84,7 @@ onMounted(() => {
     <template v-if="loaded === false">
       <button @click="loaded = true">ема...</button>
       <div class="input-wrapper-first">
-        <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png" multiple>
+        <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png">
         <label for="input-file" class="input-styled">
           <span class="icon-input"><img class="input-icon" src="./icons/IconUpload.svg" alt="Выбрать файл"></span>
         </label>
@@ -47,14 +96,9 @@ onMounted(() => {
         <Item v-for="i in 10">
           <template #name>name.png</template>
           <template #size>128x128</template>
-          <template #count>
-            <button @click="countMinusFunc" style="margin-right: 5px">-</button>
-            <input v-model="count" style="margin-right: 5px; width: 20px; height: 20px; border: 0; text-align: center">
-            <button @click="count++" style="margin-right: 5px">+</button>
-          </template>
         </Item>
         <div class="input-wrapper-second">
-          <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png" multiple>
+          <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png">
           <label for="input-file" class="input-styled">
             <span class="icon-input"><img class="input-icon" src="./icons/IconUpload.svg" alt="Выбрать файл"></span>
           </label>
@@ -74,7 +118,7 @@ onMounted(() => {
     position: absolute;
     left: 0;
     top: 0;
-    width: 25%;
+    width: 300px;
     background-color: #000;
   }
 
