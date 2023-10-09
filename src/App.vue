@@ -1,5 +1,15 @@
 <script setup>
-import Test from './components/Test.vue'
+import Test from './components/Test.vue';
+import { get_pos } from './helpers/get_coordinates.js';
+
+const x_list = 230; // px
+const y_list = 130; // or 1000 px
+const space = 5;
+const list_size = [['1', 100, 100], ['2', 100, 100], ['3', 100, 100], ['4', 100, 100], ['5', 100, 100], ['6', 100, 100], ['7', 100, 100]];
+
+let cord = get_pos(space, x_list, y_list, list_size);
+console.log(cord)
+
 </script>
 
 <template>
