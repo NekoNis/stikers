@@ -1,11 +1,9 @@
 <script setup>
-import Test from './components/Test.vue'
+import Objects from './components/ObjectsPanel.vue'
 </script>
 
 <template>
-  <main>
-    <Test />
-  </main>
+  <Objects />
 </template>
 
 <style scoped>
