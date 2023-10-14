@@ -1,12 +1,12 @@
-<script>
-
+<script setup>
+import Objects from './components/ObjectsPanel.vue'
 </script>
 
 <template>
-  <main>
+  <Objects />
+<script>
 
-  </main>
-</template>
+</script>
 
 <style scoped>
 
