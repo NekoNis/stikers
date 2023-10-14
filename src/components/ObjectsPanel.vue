@@ -13,6 +13,7 @@ import {get_pos} from "@/helpers/get_coordinates";
   чистые функции
   javascript - arrays
   StckersCalculator 20/366
+  drawImage(image, dx, dy)
 */
 
 const objects = reactive([
