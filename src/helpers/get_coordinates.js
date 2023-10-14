@@ -1,14 +1,3 @@
-// const x_list = 230; // px
-// const y_list = 130; // or 1000 px
-// const space = 5;
-// const list_size = [['1', 100, 100], ['2', 100, 100], ['3', 100, 100], ['4', 100, 100], ['5', 100, 100], ['6', 100, 100], ['7', 100, 100]];
-
-// let test = [
-//     [[['name_stikers'], ['size_x'], ['size_y']], ...], // картинки
-//     [['list_size_x'], ['list_size_y'], ['space']] // хар_лист
-// ]
-
-
 export function get_pos(space, x_list, y_list, list_size) {
     let coordinates = [];
     if (y_list === 0) {
