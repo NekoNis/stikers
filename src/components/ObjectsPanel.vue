@@ -14,16 +14,17 @@ import {onMounted, ref, reactive} from "vue";
   ES
   чистые функции
   javascript - arrays
+  StckersCalculator 20/366
 */
 
 const objects = reactive([
     {uniqueID: ref(), parentID: ref(), url: ref(""), size: {x: ref(), y: ref()}}
 ])
 
-// const exportData = reactive(
-//     [{id: ref(), size: {x: sizeImage[0].value, y: sizeImage[1].value}}],
-//     {size: {x: sizeCanvas[0].value, y: sizeCanvas[1].value}}, {space: space.value}
-// )
+const exportData = reactive(
+    [{id: ref(), size: {x: sizeImage[0].value, y: sizeImage[1].value}}],
+    {size: {x: sizeCanvas[0].value, y: sizeCanvas[1].value}}, {space: space.value}
+)
 
 let space = ref(0)
 let sizeImage = ref([1, 1])
@@ -46,13 +47,26 @@ function countPlusFunc(event) {
   }
 }
 
-//onMounted(() => {
+const inputFile = document.getElementById("input-file")
+const readFileAsDataFromInput = ( inputFile ) => {
+  return new Promise(( resolve, reject ) => {
+    if ( inputFile.files && inputFile.files[ 0 ] ) {
+      const reader = new FileReader()
+      reader.onload = function ( event ) {
+        resolve( event.target.result )
+      }
+      reader.readAsDataURL( inputFile.files[ 0 ] )
+    } else {
+      reject()
+    }
+  } )
+}
 
-  // const inputFile = document.getElementById("input-file")
-  //
-  // inputFile.addEventListener('change', event => {
-  //
-  // })
+// onMounted(() => {}
+
+
+
+
 
 
 
@@ -108,6 +122,7 @@ function countPlusFunc(event) {
   </main>
   <section>
     <!-- There will be stickers here soon -->
+    <canvas id="main-field"></canvas>
   </section>
 </template>
 
