@@ -16,6 +16,13 @@ import {get_pos} from "@/helpers/get_coordinates";
   drawImage(image, dx, dy)
 */
 
+const space = ref(5)
+const listX = ref(1285)
+const listY = ref(650)
+let exportData = [space.value, listX.value, listY.value, []]
+let myData = []
+let importData = []
+
 const objects = reactive([
     {uniqueID: ref(), parentID: ref(), url: ref(""), size: {x: ref(), y: ref()}}
 ]);
@@ -26,27 +33,42 @@ const exportDataImages = reactive(
 const exportDataCanvas = reactive(
     {size: {x: ref(), y: ref()}, space: ref()}
 );
+
 const count = ref(0)
 const loaded = ref(true)
-const importData = get_pos(
-    2,
-    1285,
-    650,
-    [
-      ["1", 150, 150],["2", 150, 150],["3", 150, 150],
-      ["4", 150, 150],["5", 150, 150],["6", 150, 150],
-      ["7", 150, 150],["8", 150, 150],["9", 150, 150]
-    ]
-)
+
 
 const draw = () => {
   let canvas = document.getElementById("main-field");
   let ctx = canvas.getContext("2d");
+  console.log(exportData)
+  importData = get_pos(exportData[0], exportData[1], exportData[2], exportData[3])
 
   for (let i = 0; i < importData.length; i++) {
-    ctx.fillRect(importData[i][1], importData[i][2], 150, 150);
+    var img = new Image();
+    img.src = myData[i]
+    ctx.drawImage(img, importData[i][1], importData[i][2]);
   }
 }
+
+const readFile = ( inputFile ) => {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    let imageURL
+    reader.onerror = () => reject(new DOMException("Problem parsing input file."))
+    reader.onload = () => resolve(imageURL = reader.result)
+    reader.onloadend = () => {
+      var image = new Image();
+      image.src = imageURL;
+      console.log(inputFile.target.files[0])
+      image.onload = () => {
+        exportData[3].push([count.value.toString(), image.width, image.height])
+        myData.push(imageURL)
+        count.value++
+      } // Get width and height img
+    }
+    reader.readAsDataURL(inputFile.target.files[0])});
+};
 
 </script>
 
@@ -71,7 +93,7 @@ const draw = () => {
           </Item>
         </div>
         <div class="input-wrapper-second">
-          <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png">
+          <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png" @change="readFile">
           <label for="input-file" class="input-styled">
             <span class="icon-input"><img class="input-icon" src="./icons/IconUpload.svg" alt="Выбрать файл"></span>
           </label>
@@ -81,7 +103,8 @@ const draw = () => {
   </main>
   <section>
     <!-- There will be stickers here soon -->
-    <canvas id="main-field" width="1285" height="650" @click="draw"></canvas>
+    <canvas id="main-field" width="1285" height="650"></canvas>
+    <button @click="draw" style="position: absolute; bottom: 5px; right: 5px">Считай свои деньги!</button>
   </section>
 </template>
 
