@@ -1,95 +1,52 @@
 <script setup>
 import Item from './Object.vue'
 import {onMounted, ref, reactive} from "vue";
+import {get_pos} from "@/helpers/get_coordinates";
 
 /*
 изучить:
   жизненный цикл компонентов
   react.js
-  .map() (js)
-  reactive (vue)
   ! canvas
   async await (js)
-  arrow functions
   ES
   чистые функции
   javascript - arrays
   StckersCalculator 20/366
+  drawImage(image, dx, dy)
 */
 
 const objects = reactive([
     {uniqueID: ref(), parentID: ref(), url: ref(""), size: {x: ref(), y: ref()}}
-])
+]);
 
-const exportData = reactive(
-    [{id: ref(), size: {x: sizeImage[0].value, y: sizeImage[1].value}}],
-    {size: {x: sizeCanvas[0].value, y: sizeCanvas[1].value}}, {space: space.value}
+const exportDataImages = reactive(
+    [{id: ref(), size: {x: ref(), y: ref()}}]
+);
+const exportDataCanvas = reactive(
+    {size: {x: ref(), y: ref()}, space: ref()}
+);
+const count = ref(0)
+const loaded = ref(true)
+const importData = get_pos(
+    2,
+    1285,
+    650,
+    [
+      ["1", 150, 150],["2", 150, 150],["3", 150, 150],
+      ["4", 150, 150],["5", 150, 150],["6", 150, 150],
+      ["7", 150, 150],["8", 150, 150],["9", 150, 150]
+    ]
 )
 
-let space = ref(0)
-let sizeImage = ref([1, 1])
-let sizeCanvas = ref([1, 1])
-let count = ref(1)
-let id = ref(1)
-const fileName = ref('')
-const loaded = ref(false)
-function countMinusFunc(event) {
-  if (event) {
-    if (count.value != 0) {
-      count.value--
-    }
+const draw = () => {
+  let canvas = document.getElementById("main-field");
+  let ctx = canvas.getContext("2d");
+
+  for (let i = 0; i < importData.length; i++) {
+    ctx.fillRect(importData[i][1], importData[i][2], 150, 150);
   }
 }
-
-function countPlusFunc(event) {
-  if (event) {
-    count.value++
-  }
-}
-
-const inputFile = document.getElementById("input-file")
-const readFileAsDataFromInput = ( inputFile ) => {
-  return new Promise(( resolve, reject ) => {
-    if ( inputFile.files && inputFile.files[ 0 ] ) {
-      const reader = new FileReader()
-      reader.onload = function ( event ) {
-        resolve( event.target.result )
-      }
-      reader.readAsDataURL( inputFile.files[ 0 ] )
-    } else {
-      reject()
-    }
-  } )
-}
-
-// onMounted(() => {}
-
-
-
-
-
-
-
-
-
-//     inputFile.addEventListener('change', event => {
-//
-//       let file = inputFile.files[0];
-//       const image = new Image();
-//       image.src = window.URL.createObjectURL();
-//       console.log(image.src);
-//       // Добавляем новые имена файлов
-//       [...event.target.files].map(nameFile=>{
-//         exportData.push({
-//           id: id.value,
-//           size: {
-//             x: 1,
-//             y: 1
-//           }
-//         });
-//     })
-//   });
-// })
 
 </script>
 
@@ -106,11 +63,13 @@ const readFileAsDataFromInput = ( inputFile ) => {
     </template>
     <template v-else-if="loaded === true">
       <div class="load-objects">
-        <!-- Example of object -->
-        <Item v-for="i in 10">
-          <template #name>name.png</template>
-          <template #size>128x128</template>
-        </Item>
+        <div class="images">
+          <!-- Example of object -->
+          <Item v-for="i in 10">
+            <template #name>name.png</template>
+            <template #size>128x128</template>
+          </Item>
+        </div>
         <div class="input-wrapper-second">
           <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png">
           <label for="input-file" class="input-styled">
@@ -122,19 +81,34 @@ const readFileAsDataFromInput = ( inputFile ) => {
   </main>
   <section>
     <!-- There will be stickers here soon -->
-    <canvas id="main-field"></canvas>
+    <canvas id="main-field" width="1285" height="650" @click="draw"></canvas>
   </section>
 </template>
 
 
 <style scoped>
+  #main-field {
+    position: absolute;
+    right: 0;
+    top: 0;
+    border: 1px solid gray;
+  }
   /* style */
   .load-objects {
     position: absolute;
     left: 0;
     top: 0;
     width: 300px;
-    background-color: #000;
+    height: 720px;
+  }
+  .images {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 300px;
+    height: 650px;
+    background-color: #dbdce0;
+    overflow-y: scroll;
   }
 
   .input-hidden {
@@ -171,7 +145,9 @@ const readFileAsDataFromInput = ( inputFile ) => {
 
   .input-wrapper-second {
     background-color: rgb(204 0 0);
-    position: relative;
+    position: absolute;
+    top: 650px;
+    left: 0;
     height: 70px;
     width: 100%;
     margin-top: 1px;
