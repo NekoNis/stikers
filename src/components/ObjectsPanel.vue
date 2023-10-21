@@ -1,8 +1,10 @@
 <script setup>
+/* -----------------------------------------------------IMPORTS----------------------------------------------------- */
 import Item from './Object.vue'
-import {onMounted, ref, reactive} from "vue";
+import {ref, reactive} from "vue";
 import {get_pos} from "@/helpers/get_coordinates";
 
+/*---------------------------------------------------FOR LEARNING--------------------------------------------------- */
 /*
 изучить:
   жизненный цикл компонентов
@@ -14,30 +16,33 @@ import {get_pos} from "@/helpers/get_coordinates";
   javascript - arrays
   StckersCalculator 20/366
   drawImage(image, dx, dy)
+  <str>.split("-")
+  uniqueID = "id-count"
+  for (var i = 0; i < id.split("-")[1]; i++) { code... }
 */
 
+
+
+
+/* ----------------------------------------------------VARIABLES---------------------------------------------------- */
 const space = ref(5)
 const listX = ref(1285)
 const listY = ref(650)
-let exportData = [space.value, listX.value, listY.value, []]
-let myData = []
-let importData = []
-
-const objects = reactive([
-    {uniqueID: ref(), parentID: ref(), url: ref(""), size: {x: ref(), y: ref()}}
-]);
-
-const exportDataImages = reactive(
-    [{id: ref(), size: {x: ref(), y: ref()}}]
-);
-const exportDataCanvas = reactive(
-    {size: {x: ref(), y: ref()}, space: ref()}
-);
-
 const count = ref(0)
 const loaded = ref(true)
 
+let objects = [] // [["id", "name", "url", "sizeX"]]
 
+let exportData = [space.value, listX.value, listY.value, []]
+let importData = []
+
+
+
+
+
+/* ----------------------------------------------------FUNCTIONS---------------------------------------------------- */
+
+// This function draw all got images on canvas
 const draw = () => {
   let canvas = document.getElementById("main-field");
   let ctx = canvas.getContext("2d");
@@ -46,11 +51,16 @@ const draw = () => {
 
   for (let i = 0; i < importData.length; i++) {
     var img = new Image();
-    img.src = myData[i]
+    img.src = objects[i][2]
     ctx.drawImage(img, importData[i][1], importData[i][2]);
   }
 }
 
+// This function only for check!
+const checkFunc = () => {
+}
+
+// This function need for getting data of image
 const readFile = ( inputFile ) => {
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
@@ -63,9 +73,11 @@ const readFile = ( inputFile ) => {
       console.log(inputFile.target.files[0])
       image.onload = () => {
         exportData[3].push([count.value.toString(), image.width, image.height])
-        myData.push(imageURL)
+        var name = inputFile.target.files[0]['name'];
+        var size = image.width.toString() + "x" + image.height.toString();
+        objects.push([count.value.toString(), name, image.src, size])
         count.value++
-      } // Get width and height img
+      }
     }
     reader.readAsDataURL(inputFile.target.files[0])});
 };
@@ -87,10 +99,7 @@ const readFile = ( inputFile ) => {
       <div class="load-objects">
         <div class="images">
           <!-- Example of object -->
-          <Item v-for="i in 10">
-            <template #name>name.png</template>
-            <template #size>128x128</template>
-          </Item>
+          <Item v-for="i in count" :image-prop="objects[i-1][2]" :name-prop="objects[i-1][1]" :size-prop="objects[i-1][3]"></Item>
         </div>
         <div class="input-wrapper-second">
           <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png" @change="readFile">
@@ -103,8 +112,8 @@ const readFile = ( inputFile ) => {
   </main>
   <section>
     <!-- There will be stickers here soon -->
-    <canvas id="main-field" width="1285" height="650"></canvas>
-    <button @click="draw" style="position: absolute; bottom: 5px; right: 5px">Считай свои деньги!</button>
+    <canvas id="main-field" :width="listX" :height="listY"></canvas>
+    <button @click="draw" style="position: absolute; bottom: 5px; right: 5px">Разместить</button>
   </section>
 </template>
 
@@ -171,7 +180,7 @@ const readFile = ( inputFile ) => {
     position: absolute;
     top: 650px;
     left: 0;
-    height: 70px;
+    height: 60px;
     width: 100%;
     margin-top: 1px;
   }

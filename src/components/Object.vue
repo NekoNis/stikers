@@ -1,19 +1,28 @@
 <script setup>
-import {ref} from 'vue'
 
-const count = ref(1)
+import {computed, ref} from "vue";
+
+let linkImage = "#"
+const countImage = ref(1)
+
+defineProps({
+  imageProp: String,
+  nameProp: String,
+  sizeProp: String,
+})
+
 
 function countMinusFunc(event) {
   if (event) {
-    if (count.value != 0) {
-      count.value--
+    if (countImage.value != 0) {
+      countImage.value--
     }
   }
 }
 
 function countPlusFunc(event) {
   if (event) {
-    count.value++
+    countImage.value++
   }
 }
 
@@ -21,19 +30,18 @@ function countPlusFunc(event) {
 
 <template>
   <div class="object">
-    <img id="img-icon" src="#">
     <div class="big-picture">
-      <img id="picture" v-bind:src="value">
+      <img id="picture" v-bind:src="imageProp">
     </div>
     <span id="img-name">
-      <slot name="name"></slot>
+      <slot name="name">{{ nameProp }}</slot>
     </span>
     <span id="img-size">
-      <slot name="size"></slot>
+      <slot name="size">{{ sizeProp }}</slot>
     </span>
     <div class="img-count">
       <button @click="countMinusFunc" class="count-button count-minus" style="margin-right: 5px"><svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M128 544h768a32 32 0 1 0 0-64H128a32 32 0 0 0 0 64z"></path></svg></button>
-      <input v-model="count" id="count-text" style="margin-right: 5px; border: 1px; text-align: center">
+      <input v-model="countImage" id="count-text" style="margin-right: 5px; border: 1px; text-align: center">
       <button @click="countPlusFunc" class="count-button count-plus" style="margin-right: 5px"><svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M480 480V128a32 32 0 0 1 64 0v352h352a32 32 0 1 1 0 64H544v352a32 32 0 1 1-64 0V544H128a32 32 0 0 1 0-64h352z"></path></svg></button>
     </div>
   </div>
@@ -83,7 +91,7 @@ function countPlusFunc(event) {
     transition-duration: .2s;
   }
 
-  #img-icon:hover + .big-picture {
+  #object:hover + .big-picture {
     visibility: visible;
     opacity: 1;
   }
