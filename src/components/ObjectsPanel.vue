@@ -2,7 +2,9 @@
 /* -----------------------------------------------------IMPORTS----------------------------------------------------- */
 import Item from './Object.vue'
 import {ref, reactive} from "vue";
-import {get_pos} from "@/helpers/get_coordinates";
+import {get_pos1, get_pos2} from "@/helpers/get_coordinates";
+import "@/helpers/canvas2svg";
+import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
 
 /*---------------------------------------------------FOR LEARNING--------------------------------------------------- */
 /*
@@ -14,11 +16,13 @@ import {get_pos} from "@/helpers/get_coordinates";
   ES
   чистые функции
   javascript - arrays
-  StckersCalculator 20/366
+  StickersCalculator 20/366
   drawImage(image, dx, dy)
   <str>.split("-")
   uniqueID = "id-count"
   for (var i = 0; i < id.split("-")[1]; i++) { code... }
+  user width and height (cm)
+  шаблоны проектирования
 */
 
 
@@ -27,16 +31,21 @@ import {get_pos} from "@/helpers/get_coordinates";
 /* ----------------------------------------------------VARIABLES---------------------------------------------------- */
 const space = ref(5)
 const listX = ref(1285)
-const listY = ref(650)
+const listY = ref(0)
 const count = ref(0)
 const loaded = ref(true)
+const outputSVG = ref('a')
 
-let objects = [] // [["id", "name", "url", "sizeX"]]
+// const objects = reactive([{id: '', image: '', name: '', sizeX: 0, sizeY: 0}])
 
-let exportData = [space.value, listX.value, listY.value, []]
-let importData = []
+let objects = [] // [[id:string, imageURL:string, name:string, sizeXY:string]]
 
+let exportData = [space.value, listX.value, listY.value, []] // [space:int, listX:int, listY:string, [id:string, sizeX:int, sizeY:int]]
+let importData = [] // [id.string, positionX:int, positionY:string]
 
+defineProps({
+  idImport: String,
+})
 
 
 
@@ -47,14 +56,29 @@ const draw = () => {
   let canvas = document.getElementById("main-field");
   let ctx = canvas.getContext("2d");
   console.log(exportData)
-  importData = get_pos(exportData[0], exportData[1], exportData[2], exportData[3])
+  importData = get_pos2(exportData[0], exportData[1], exportData[2], exportData[3])
 
   for (let i = 0; i < importData.length; i++) {
     var img = new Image();
-    img.src = objects[i][2]
+    img.src = objects[i][1]
     ctx.drawImage(img, importData[i][1], importData[i][2]);
   }
+  console.log(importData)
 }
+
+
+const downloadCanvas = () => {
+  let ctx = new C2S(listX.value, listY.value);
+  importData = get_pos2(exportData[0], exportData[1], exportData[2], exportData[3]);
+
+  for (let i = 0; i < importData.length; i++) {
+    var img = new Image();
+    img.src = objects[i][1];
+    ctx.drawImage(img, importData[i][1], importData[i][2]);
+  };
+  let svg = ctx.getSvg();
+  saveSvgAsPng.saveSvg(svg, "output.svg");
+};
 
 // This function only for check!
 const checkFunc = () => {
@@ -75,7 +99,7 @@ const readFile = ( inputFile ) => {
         exportData[3].push([count.value.toString(), image.width, image.height])
         var name = inputFile.target.files[0]['name'];
         var size = image.width.toString() + "x" + image.height.toString();
-        objects.push([count.value.toString(), name, image.src, size])
+        objects.push([count.value.toString(), image.src, name, size])
         count.value++
       }
     }
@@ -99,7 +123,7 @@ const readFile = ( inputFile ) => {
       <div class="load-objects">
         <div class="images">
           <!-- Example of object -->
-          <Item v-for="i in count" :image-prop="objects[i-1][2]" :name-prop="objects[i-1][1]" :size-prop="objects[i-1][3]"></Item>
+          <Item v-for="i in count" :id-export="objects[i-1][0]" :image-export="objects[i-1][1]" :name-export="objects[i-1][2]" :size-export="objects[i-1][3]"></Item>
         </div>
         <div class="input-wrapper-second">
           <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png" @change="readFile">
@@ -112,8 +136,15 @@ const readFile = ( inputFile ) => {
   </main>
   <section>
     <!-- There will be stickers here soon -->
-    <canvas id="main-field" :width="listX" :height="listY"></canvas>
+    <canvas id="main-field" :width="listX" :height=650></canvas>
     <button @click="draw" style="position: absolute; bottom: 5px; right: 5px">Разместить</button>
+    <button @click="downloadCanvas" style="position: absolute; bottom: 30px; right: 5px">Отправить</button>
+    <section v-if="outputSVG == ''">
+      <button @click="downloadCanvas" style="position: absolute; bottom: 5px; right: 100px" disabled>Рассчитать</button>
+    </section>
+    <section v-else>
+      <button @click="downloadCanvas" style="position: absolute; bottom: 5px; right: 100px">Рассчитать</button>
+    </section>
   </section>
 </template>
 

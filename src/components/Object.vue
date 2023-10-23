@@ -6,11 +6,11 @@ let linkImage = "#"
 const countImage = ref(1)
 
 defineProps({
-  imageProp: String,
-  nameProp: String,
-  sizeProp: String,
+  idExport: String,
+  imageExport: String,
+  nameExport: String,
+  sizeExport: String,
 })
-
 
 function countMinusFunc(event) {
   if (event) {
@@ -31,13 +31,13 @@ function countPlusFunc(event) {
 <template>
   <div class="object">
     <div class="big-picture">
-      <img id="picture" v-bind:src="imageProp">
+      <img id="picture" :src="imageExport">
     </div>
     <span id="img-name">
-      <slot name="name">{{ nameProp }}</slot>
+      <slot name="name" :id="idExport">{{ nameExport }}</slot>
     </span>
     <span id="img-size">
-      <slot name="size">{{ sizeProp }}</slot>
+      <slot name="size">{{ sizeExport }}</slot>
     </span>
     <div class="img-count">
       <button @click="countMinusFunc" class="count-button count-minus" style="margin-right: 5px"><svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M128 544h768a32 32 0 1 0 0-64H128a32 32 0 0 0 0 64z"></path></svg></button>
