@@ -12,21 +12,23 @@ defineProps({
   sizeExport: String,
 })
 
-function countMinusFunc(event) {
-  if (event) {
-    if (countImage.value != 0) {
-      countImage.value--
-    }
+const countMinusFunc = () => {
+  if (countImage.value != 0) {
+    countImage.value--
   }
 }
 
-function countPlusFunc(event) {
-  if (event) {
-    countImage.value++
-  }
+const countPlusFunc = () => {
+  countImage.value++
 }
 
-</script>
+const openOptions = () => {
+  document.getElementById('optionsIMG').classList.toggle('hidden')
+  document.getElementById('optionsIMG').classList.toggle('showed')
+  //document.getElementById('optionsIMG').classList.toggle('hidden') // optionsPanel
+  //document.getElementById('optionsIMG').classList.toggle('showed') // optionsPanel
+}
+  </script>
 
 <template>
   <div class="object">
@@ -44,6 +46,10 @@ function countPlusFunc(event) {
       <input v-model="countImage" id="count-text" style="margin-right: 5px; border: 1px; text-align: center">
       <button @click="countPlusFunc" class="count-button count-plus" style="margin-right: 5px"><svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M480 480V128a32 32 0 0 1 64 0v352h352a32 32 0 1 1 0 64H544v352a32 32 0 1 1-64 0V544H128a32 32 0 0 1 0-64h352z"></path></svg></button>
     </div>
+    <button @click="openOptions" id="openOptions"><img id="optionsIMG" class="hidden" src="./icons/options.svg" style="width: 20px; position: absolute; left: 0; top: 2px;"></button>
+    <div class="optionsPanel">
+      #
+    </div>
   </div>
 </template>
 
@@ -56,6 +62,34 @@ function countPlusFunc(event) {
     height: 80px;
     margin-top: 1px;
   }
+
+  #openOptions .hidden {
+    transform: rotate(0deg);
+    transition-duration: .1s;
+  }
+
+  #openOptions .showed {
+    transform: rotate(180deg);
+    transition-duration: .1s;
+  }
+
+  #openOptions {
+    position: absolute;
+    right: 13px;
+    bottom: 7px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background-color: transparent;
+  }
+
+  #img-name {
+     width: 100px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+   }
 
   #img-icon {
     position: relative;
@@ -103,7 +137,7 @@ function countPlusFunc(event) {
 
   .img-count {
     position: absolute;
-    top: 24px;
+    top: 14px;
     width: 100px;
     right: 10px;
     height: 32px;
