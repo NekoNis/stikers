@@ -2,3 +2,10 @@ body {
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
 }
+
+:root {
+    --red-color: #CC0000;
+    --blue-color: #409eff;
+    --light-gray-color: #f5f7fa;
+    --gray-color: #606266;
+}
