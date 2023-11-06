@@ -1,145 +1,162 @@
 <script setup>
 
-import {computed, ref} from "vue";
+import {ref, reactive} from "vue";
 
 let linkImage = "#"
 const countImage = ref(1)
+const widthImage = ref(0)
+const heightImage = ref(0)
 
-defineProps({
+defineProps( {
   idExport: String,
   imageExport: String,
   nameExport: String,
+  extExport: String,
   sizeExport: String,
 })
 
-function countMinusFunc(event) {
-  if (event) {
-    if (countImage.value != 0) {
-      countImage.value--
-    }
+const plusFunc = (variable, factor) => {
+  variable += 1 * factor;
+}
+
+const minusFunc = (variable, factor) => {
+  if (variable != 0) {
+    variable -= 1 * factor;
   }
 }
 
-function countPlusFunc(event) {
-  if (event) {
-    countImage.value++
-  }
-}
+
 
 </script>
 
 <template>
   <div class="object">
-    <div class="big-picture">
-      <img id="picture" :src="imageExport">
+    <div class="info-panel">
+      <div class="img-image">
+        <img id="picture" :src="imageExport">
+      </div>
+      <div class="desc">
+        <div class="img-name" :class="idExport">
+          <slot>{{ nameExport }}</slot>
+        </div>
+        <div class="img-size">
+          <p><slot>{{ sizeExport }}</slot></p>
+        </div>
+      </div>
+      <div class="data-image">
+        <p class="file-extension"><slot>{{ extExport }}</slot></p>
+        <button class="open-options"><img id="optionsIMG" src="./icons/options.svg" style="width: 20px;"></button>
+      </div>
     </div>
-    <span id="img-name">
-      <slot name="name" :id="idExport">{{ nameExport }}</slot>
-    </span>
-    <span id="img-size">
-      <slot name="size">{{ sizeExport }}</slot>
-    </span>
-    <div class="img-count">
-      <button @click="countMinusFunc" class="count-button count-minus" style="margin-right: 5px"><svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M128 544h768a32 32 0 1 0 0-64H128a32 32 0 0 0 0 64z"></path></svg></button>
-      <input v-model="countImage" id="count-text" style="margin-right: 5px; border: 1px; text-align: center">
-      <button @click="countPlusFunc" class="count-button count-plus" style="margin-right: 5px"><svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M480 480V128a32 32 0 0 1 64 0v352h352a32 32 0 1 1 0 64H544v352a32 32 0 1 1-64 0V544H128a32 32 0 0 1 0-64h352z"></path></svg></button>
-    </div>
+<!--    <div id="options-panel" :class="showPanel">-->
+<!--      <div class="option width">-->
+<!--        <span id="option">Длина (мм): </span>-->
+<!--        <div id="var-buttons">-->
+<!--          <input v-model="widthImage" id="var-text" style="margin-right: 5px; border: 1px; text-align: center">-->
+<!--          <button @click="(param1, param2, ...)=>{widthMinusFunc(); func1; func2; ...}(param1, param2, ...)" class="var-button var-minus" style="margin-right: 5px">-</button>-->
+<!--          <button @click="widthPlusFunc" class="var-button var-plus" style="margin-right: 5px">+</button>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="option height">-->
+<!--        <span id="option">Ширина (мм): </span>-->
+<!--        <div id="var-buttons">-->
+<!--          <input v-model="heightImage" id="var-text" style="margin-right: 5px; border: 1px; text-align: center">-->
+<!--          <button @click="heightMinusFunc" class="var-button var-minus" style="margin-right: 5px">-</button>-->
+<!--          <button @click="heightPlusFunc" class="var-button var-plus" style="margin-right: 5px">+</button>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="option count">-->
+<!--        <span id="option">Количество: </span>-->
+<!--        <div id="var-buttons">-->
+<!--          <input v-model="countImage" id="var-text" style="margin-right: 5px; border: 1px; text-align: center">-->
+<!--          <button @click="countMinusFunc" class="var-button var-minus" style="margin-right: 5px">-</button>-->
+<!--          <button @click="countPlusFunc" class="var-button var-plus" style="margin-right: 5px">+</button>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
   </div>
 </template>
 
 <style scoped>
   .object {
-    background-color: #fff;
-    position: relative;
-    left: 0;
-    width: calc(100% - 1px);
-    height: 80px;
-    margin-top: 1px;
-  }
-
-  #img-icon {
-    position: relative;
-    top: 10px;
-    left: 10px;
-    width: 40px;
-    height: 40px;
-  }
-
-  #img-name {
-    position: absolute;
-    top: 8px;
-    left: 60px;
-  }
-
-  #img-size {
-    position: absolute;
-    left: 60px;
-    bottom: 8px;
-  }
-
-  .big-picture {
-    position: absolute;
-    top: -40px;
-    left: 5px;
-    border-radius: 10px;
-    width: 150px;
-    height: 150px;
-    background-color: #f5f7fa;
-    opacity: 0;
-    z-index: 1;
-    visibility: hidden;
-    transition-duration: .2s;
-  }
-
-  #object:hover + .big-picture {
-    visibility: visible;
-    opacity: 1;
-  }
-
-  .big-picture:hover {
-    visibility: visible;
-    opacity: 1;
-  }
-
-  .img-count {
-    position: absolute;
-    top: 24px;
-    width: 100px;
-    right: 10px;
-    height: 32px;
-    align-items: center;
-    border-radius: 5px;
-    box-shadow: 0 0 0 1px #dcdfe6;
-    /*overflow: hidden; 8*/
-  }
-
-  .img-count .count-button {
-    position: absolute;
     display: flex;
+    height: 80px;
+    width: 100%;
+    margin-bottom: -1px;
+    background-color: white;
+    border: 1px solid var(--gray-color);
+  }
+
+  .info-panel {
+    display: flex;
+    flex: auto;
+  }
+
+  .img-image {
+    flex: auto;
+    width: 60px;
+    max-height: 60px;
+    margin-top: 10px;
+    margin-left: 10px;
+    display: flex;
+  }
+
+  #picture {
+    max-width: 60px;
+    max-height: 60px;
+    border-radius: 5px;
+    margin: auto;
+  }
+
+  .desc {
+    flex: auto;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .img-name {
+    margin-top: 10px;
+    margin-left: 10px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1em;
+    height: 60px;
+    width: 246px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3em;
+  }
+
+  .img-size {
+    margin-bottom: 10px;
+    margin-left: 10px;
+  }
+
+  .data-image {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .file-extension {
+    display: flex;
+    width: 40px;
+    height: 25px;
+    background-color: var(--light-gray-color);
+    border: 1px solid var(--gray-color);
+    border-radius: 5px;
+    justify-content: center;
     align-items: center;
-    align-content: center;
-    height: 32px;
-    width: 32px;
-    border: 0;
-    top: 0;
-    line-height: 1em;
-    background-color: #f5f7fa;
+    align-self: flex-start;
+    margin-right: 10px;
+    margin-top: 10px;
   }
 
-  #count-text {
-    position: absolute;
-    left: 32px;
-    right: 27px;
-    height: 30px;
+  .open-options {
+    align-self: flex-end;
+    margin-right: 10px;
+    margin-top: 15px;
   }
 
-  .count-minus {
-    position: absolute;
-    left: 0;
-  }
-
-  .count-plus {
-    position: absolute;
-    right: -5px;
-  }
 </style>

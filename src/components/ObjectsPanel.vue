@@ -1,91 +1,101 @@
-<script setup>
-/* -----------------------------------------------------IMPORTS----------------------------------------------------- */
-import Item from './Object.vue'
-import {ref, reactive} from "vue";
-import {get_pos1, get_pos2} from "@/helpers/get_coordinates";
-import "@/helpers/canvas2svg";
-import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
-
-/*---------------------------------------------------FOR LEARNING--------------------------------------------------- */
-/*
-изучить:
+<!--
+TODO
+ изучить:
   жизненный цикл компонентов
   react.js
-  ! canvas
   async await (js)
   ES
   чистые функции
   javascript - arrays
   StickersCalculator 20/366
-  drawImage(image, dx, dy)
-  <str>.split("-")
-  uniqueID = "id-count"
-  for (var i = 0; i < id.split("-")[1]; i++) { code... }
-  user width and height (cm)
-  шаблоны проектирования
-*/
+  ! шаблоны проектирования
+  reactive для сбора всех переменных
+-->
+
+
+<template>
+  <div class="stickers-calculator">
+    <nav>
+      <!-- Objects.vue -->
+      <div class="objects">
+        <!-- Example of object -->
+        <Item v-for="i in count" :id-export="objects[i-1][0]" :image-export="objects[i-1][1]" :name-export="objects[i-1][2]" :ext-export="objects[i-1][3]" :size-export="objects[i-1][4] + 'x' + objects[i-1][5]"></Item>
+      </div>
+
+      <div class="input-wrapper">
+        <input type="file" id="input-file" style="width: 0;" accept=".jpg, .jpeg, .png" @change="readFile">
+        <label for="input-file" class="input-styled">
+          <span class="icon-input">Загрузить новый стикер</span>
+        </label>
+      </div>
+    </nav>
+
+    <main>
+      <div id="border-field" style="height: calc(100vh - 100px); background-color: #F3F4F6; border-radius: 10px; border: 1px solid var(--gray-color)">
+        <canvas id="field" :width="1000" :height="1000"></canvas>
+      </div>
+      <div class="calculator-panel">
+        <div class="button-calculator">
+          <button id="place-an-image">Рассчитать</button>
+          <button id="send-to-prod">Отправить</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script setup>
+
+import Item from './Object.vue'
+import {ref, reactive} from "vue";
+import {get_pos1, get_pos2} from "@/helpers/get_coordinates";
+import {pxInMm} from "@/helpers/utils";
+import "@/helpers/canvas2svg";
+// import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
 
 
 
-
-/* ----------------------------------------------------VARIABLES---------------------------------------------------- */
-const space = ref(5)
-const listX = ref(1285)
-const listY = ref(0)
-const count = ref(0)
-const loaded = ref(true)
-const outputSVG = ref('a')
-
-// const objects = reactive([{id: '', image: '', name: '', sizeX: 0, sizeY: 0}])
-
-let objects = [] // [[id:string, imageURL:string, name:string, sizeXY:string]]
-
-let exportData = [space.value, listX.value, listY.value, []] // [space:int, listX:int, listY:string, [id:string, sizeX:int, sizeY:int]]
-let importData = [] // [id.string, positionX:int, positionY:string]
-
-defineProps({
-  idImport: String,
+// Информация о холсте
+const list = reactive({
+  space: ref(5),
+  listX: ref(1270),
+  listY: ref(0),
+  outputSVG: ref(false)
 })
+const count = ref(0)
+
+// Список данных всех загруженных изображений
+const objects = ref([])
+
+// Список данных, которые пойдут на обработку
+const exportData = ref([])
+
+// Список обработанных данных
+const importData = ref([]) // [id.string, positionX:int, positionY:string]
 
 
 
-/* ----------------------------------------------------FUNCTIONS---------------------------------------------------- */
-
-// This function draw all got images on canvas
 const draw = () => {
-  let canvas = document.getElementById("main-field");
+  let canvas = document.getElementById("field");
   let ctx = canvas.getContext("2d");
-  console.log(exportData)
-  importData = get_pos2(exportData[0], exportData[1], exportData[2], exportData[3])
-
-  for (let i = 0; i < importData.length; i++) {
+  importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value)
+  console.log(importData.value.length)
+  if (importData.value.length > 0) { list.outputSVG = true }
+  for (let i = 0; i < importData.value.length; i++) {
     var img = new Image();
-    img.src = objects[i][1]
-    ctx.drawImage(img, importData[i][1], importData[i][2]);
+    img.src = objects.value[i][1];
+    ctx.drawImage(img, importData.value[i][1], importData.value[i][2]);
   }
-  console.log(importData)
+
+  // for (let i = 0; i < importData.length; i++) {
+  //   ctx.fillRect(importData[1][i][0][0], importData[1][i][0][1], importData[1][i][1][0], importData[1][i][1][1]);
+  //   ctx.stroke();
+  // }
+  // console.log(importData)
 }
 
-
-const downloadCanvas = () => {
-  let ctx = new C2S(listX.value, listY.value);
-  importData = get_pos2(exportData[0], exportData[1], exportData[2], exportData[3]);
-
-  for (let i = 0; i < importData.length; i++) {
-    var img = new Image();
-    img.src = objects[i][1];
-    ctx.drawImage(img, importData[i][1], importData[i][2]);
-  };
-  let svg = ctx.getSvg();
-  saveSvgAsPng.saveSvg(svg, "output.svg");
-};
-
-// This function only for check!
-const checkFunc = () => {
-}
-
-// This function need for getting data of image
-const readFile = ( inputFile ) => {
+const readFile = (event) => {
+  //let inputFile = document.getElementById('input-file');
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
     let imageURL
@@ -94,133 +104,117 @@ const readFile = ( inputFile ) => {
     reader.onloadend = () => {
       var image = new Image();
       image.src = imageURL;
-      console.log(inputFile.target.files[0])
+      console.log(event.target.files[0])
       image.onload = () => {
-        exportData[3].push([count.value.toString(), image.width, image.height])
-        var name = inputFile.target.files[0]['name'];
-        var size = image.width.toString() + "x" + image.height.toString();
-        objects.push([count.value.toString(), image.src, name, size])
-        count.value++
+        exportData.value.push([count.value.toString(), image.width, image.height]);
+        var fileExtension = event.target.files[0]['name'].split('.').at(-1);
+        var fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
+        console.log(fileName, fileExtension, event.target.files[0]['name']);
+        var sizeX = image.width.toString();
+        var sizeY = image.height.toString();
+        objects.value.push([count.value.toString(), image.src, fileName, fileExtension, sizeX, sizeY]);
+        count.value++;
+        //draw();
       }
     }
-    reader.readAsDataURL(inputFile.target.files[0])});
-};
+    reader.readAsDataURL(event.target.files[0])});
+}
 
 </script>
 
-<template>
-  <main>
-    <template v-if="loaded === false">
-      <button @click="loaded = true">ема...</button>
-      <div class="input-wrapper-first">
-        <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png">
-        <label for="input-file" class="input-styled">
-          <span class="icon-input"><img class="input-icon" src="./icons/IconUpload.svg" alt="Выбрать файл"></span>
-        </label>
-      </div>
-    </template>
-    <template v-else-if="loaded === true">
-      <div class="load-objects">
-        <div class="images">
-          <!-- Example of object -->
-          <Item v-for="i in count" :id-export="objects[i-1][0]" :image-export="objects[i-1][1]" :name-export="objects[i-1][2]" :size-export="objects[i-1][3]"></Item>
-        </div>
-        <div class="input-wrapper-second">
-          <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png" @change="readFile">
-          <label for="input-file" class="input-styled">
-            <span class="icon-input"><img class="input-icon" src="./icons/IconUpload.svg" alt="Выбрать файл"></span>
-          </label>
-        </div>
-      </div>
-    </template>
-  </main>
-  <section>
-    <!-- There will be stickers here soon -->
-    <canvas id="main-field" :width="listX" :height=650></canvas>
-    <button @click="draw" style="position: absolute; bottom: 5px; right: 5px">Разместить</button>
-    <button @click="downloadCanvas" style="position: absolute; bottom: 30px; right: 5px">Отправить</button>
-    <section v-if="outputSVG == ''">
-      <button @click="downloadCanvas" style="position: absolute; bottom: 5px; right: 100px" disabled>Рассчитать</button>
-    </section>
-    <section v-else>
-      <button @click="downloadCanvas" style="position: absolute; bottom: 5px; right: 100px">Рассчитать</button>
-    </section>
-  </section>
-</template>
-
-
 <style scoped>
-  #main-field {
-    position: absolute;
-    right: 0;
-    top: 0;
-    border: 1px solid gray;
-  }
-  /* style */
-  .load-objects {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 300px;
-    height: 720px;
-  }
-  .images {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 300px;
-    height: 650px;
-    background-color: #dbdce0;
-    overflow-y: scroll;
-  }
 
-  .input-hidden {
-    opacity: 0;
-    visibility: hidden;
-  }
+.stickers-calculator {
+  display: flex;
+}
 
-  .input-wrapper-first {
-    background-color: rgb(204 0 0);
-    position: absolute;
-    left: 50px;
-    top: 50px;
-    width: 400px;
-    height: 100px;
-    border-radius: 40px;
-  }
+nav {
+  width: 400px;
+  height: 100vh;
+  margin-right: 10px;
+  display: flex;
+  flex-direction: column;
+}
 
-  .icon-input {
-    width: 100%;
-    height: 100%;
-  }
+.objects {
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+  background-color: #F3F4F6;
+  border-radius: 10px;
+  border: 1px solid var(--gray-color);
+  margin-bottom: 10px;
+}
 
-  .input-wrapper-first .icon-input {
-    position: absolute;
-  }
+.input-wrapper {
+  align-self: flex-end;
+  display: flex;
+  margin-top: 10px;
+}
 
-  .input-wrapper-first .input-icon {
-    position: relative;
-    display: flex;
-    margin: auto;
-    width: 50px;
-    top: 25px;
-  }
+.input-styled {
+  display: flex;
+  background-color: var(--red-color);
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  width: 400px;
+  height: 80px;
+  cursor: pointer;
+}
 
-  .input-wrapper-second {
-    background-color: rgb(204 0 0);
-    position: absolute;
-    top: 650px;
-    left: 0;
-    height: 60px;
-    width: 100%;
-    margin-top: 1px;
-  }
+.icon-input {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
 
-  .input-wrapper-second .input-icon {
-    position: relative;
-    display: flex;
-    margin: auto;
-    width: 30px;
-  }
+
+
+main {
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+  margin-left: 10px;
+}
+
+#field {
+  margin: 20px;
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+  background-color: white;
+}
+
+.calculator-panel {
+  justify-content: flex-end;
+  margin-top: 20px;
+  align-self: flex-end;
+  display: flex;
+  width: 100%;
+  height: 80px;
+}
+
+.button-calculator {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.button-calculator button {
+  border: none;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  height: 30px;
+  width: 125px;
+  margin-right: 10px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  background-color: var(--red-color);
+  border-radius: 4px;
+}
+
 </style>
-
