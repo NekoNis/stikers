@@ -5,10 +5,3 @@ import Objects from './components/ObjectsPanel.vue'
 <template>
   <Objects />
 </template>
-<script>
-
-</script>
-
-<style scoped>
-
-</style>
