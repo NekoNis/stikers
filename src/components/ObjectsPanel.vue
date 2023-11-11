@@ -5,11 +5,7 @@ TODO
   react.js
   async await (js)
   ES
-  чистые функции
-  javascript - arrays
   StickersCalculator 20/366
-  ! шаблоны проектирования
-  reactive для сбора всех переменных
 -->
 
 
@@ -19,7 +15,7 @@ TODO
       <!-- Objects.vue -->
       <div class="objects">
         <!-- Example of object -->
-        <Item v-for="i in count" :id-export="objects[i-1][0]" :image-export="objects[i-1][1]" :name-export="objects[i-1][2]" :ext-export="objects[i-1][3]" :size-export="objects[i-1][4] + 'x' + objects[i-1][5]"></Item>
+        <Item v-for="i in count" :id-export="objects[i-1][0]" :image-export="objects[i-1][1]" :name-export="objects[i-1][2]" :ext-export="objects[i-1][3]" :sizeX-export="objects[i-1][4]" :sizeY-export="objects[i-1][5]"></Item>
       </div>
 
       <div class="input-wrapper">
@@ -31,8 +27,13 @@ TODO
     </nav>
 
     <main>
-      <div id="border-field" style="height: calc(100vh - 100px); background-color: #F3F4F6; border-radius: 10px; border: 1px solid var(--gray-color)">
-        <canvas id="field" :width="1000" :height="1000"></canvas>
+      <div class="border-field">
+        <template v-if="list.listY == 0">
+          <canvas id="field" :width="list.listX" :height="10000"></canvas>
+        </template>
+        <template v-else>
+          <canvas id="field" :width="list.listX" :height="list.listY"></canvas>
+        </template>
       </div>
       <div class="calculator-panel">
         <div class="button-calculator">
@@ -109,9 +110,9 @@ const readFile = (event) => {
         exportData.value.push([count.value.toString(), image.width, image.height]);
         var fileExtension = event.target.files[0]['name'].split('.').at(-1);
         var fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
-        console.log(fileName, fileExtension, event.target.files[0]['name']);
-        var sizeX = image.width.toString();
-        var sizeY = image.height.toString();
+        var sizeX = image.width;
+        var sizeY = image.height;
+        console.log(sizeX, sizeY)
         objects.value.push([count.value.toString(), image.src, fileName, fileExtension, sizeX, sizeY]);
         count.value++;
         //draw();
@@ -141,7 +142,7 @@ nav {
   display: flex;
   flex-direction: column;
   flex: auto;
-  background-color: #F3F4F6;
+  background-color: var(--bg-color);
   border-radius: 10px;
   border: 1px solid var(--gray-color);
   margin-bottom: 10px;
@@ -180,10 +181,18 @@ main {
   margin-left: 10px;
 }
 
+.border-field {
+  flex: auto;
+  height: calc(100vh - 100px);
+  background-color: #000000;
+  border-radius: 10px;
+  border: 1px solid var(--gray-color);
+  overflow-y: scroll;
+}
+
 #field {
   margin: 20px;
   width: calc(100% - 40px);
-  height: calc(100% - 40px);
   background-color: white;
 }
 
