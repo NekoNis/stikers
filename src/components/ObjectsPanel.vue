@@ -6,6 +6,8 @@ TODO
   async await (js)
   ES
   StickersCalculator 20/366
+  при наведении выводить полное название файла (title)
+  фильтры
 -->
 
 
@@ -29,15 +31,15 @@ TODO
     <main>
       <div class="border-field">
         <template v-if="list.listY == 0">
-          <canvas id="field" :width="list.listX" :height="10000"></canvas>
+          <canvas id="field" :width="10000" :height="list.listX"></canvas>
         </template>
         <template v-else>
-          <canvas id="field" :width="list.listX" :height="list.listY"></canvas>
+          <canvas id="field" :width="list.listY" :height="list.listX"></canvas>
         </template>
       </div>
       <div class="calculator-panel">
         <div class="button-calculator">
-          <button id="place-an-image">Рассчитать</button>
+          <button id="place-an-image" @click="draw">Рассчитать</button>
           <button id="send-to-prod">Отправить</button>
         </div>
       </div>
@@ -49,7 +51,8 @@ TODO
 
 import Item from './Object.vue'
 import {ref, reactive} from "vue";
-import {get_pos1, get_pos2} from "@/helpers/get_coordinates";
+//import {get_pos1, get_pos2} from "@/helpers/get_coordinates";
+import { get_pos1 } from "@/helpers/test.js";
 import {pxInMm} from "@/helpers/utils";
 import "@/helpers/canvas2svg";
 // import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
@@ -66,33 +69,28 @@ const list = reactive({
 const count = ref(0)
 
 // Список данных всех загруженных изображений
-const objects = ref([])
+const objects = ref([]) // [id.str, img.str, filename.str, fileext.str, sizeX.int, sizeY.int filters.str]
 
 // Список данных, которые пойдут на обработку
 const exportData = ref([])
+let tempData = []
 
 // Список обработанных данных
-const importData = ref([]) // [id.string, positionX:int, positionY:string]
+const importData = ref([]) // [id.str, positionX:int, positionY:string]
 
 
 
 const draw = () => {
   let canvas = document.getElementById("field");
   let ctx = canvas.getContext("2d");
-  importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value)
-  console.log(importData.value.length)
+  importData.value = get_pos1(list.space, list.listX, list.listY, tempData);
   if (importData.value.length > 0) { list.outputSVG = true }
   for (let i = 0; i < importData.value.length; i++) {
     var img = new Image();
+    console.log(objects.value[i][1]);
     img.src = objects.value[i][1];
     ctx.drawImage(img, importData.value[i][1], importData.value[i][2]);
   }
-
-  // for (let i = 0; i < importData.length; i++) {
-  //   ctx.fillRect(importData[1][i][0][0], importData[1][i][0][1], importData[1][i][1][0], importData[1][i][1][1]);
-  //   ctx.stroke();
-  // }
-  // console.log(importData)
 }
 
 const readFile = (event) => {
@@ -107,15 +105,18 @@ const readFile = (event) => {
       image.src = imageURL;
       console.log(event.target.files[0])
       image.onload = () => {
-        exportData.value.push([count.value.toString(), image.width, image.height]);
+        // exportData.value.push([count.value.toString(), image.width, image.height]);
+        // tempData.value.push([count.value.toString(), image.width, image.height]);
+        tempData.push([count.value.toString(), image.width, image.height]);
+        console.log(tempData)
         var fileExtension = event.target.files[0]['name'].split('.').at(-1);
         var fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
         var sizeX = image.width;
         var sizeY = image.height;
         console.log(sizeX, sizeY)
-        objects.value.push([count.value.toString(), image.src, fileName, fileExtension, sizeX, sizeY]);
+        objects.value.push([count.value.toString(), image.src, fileName, fileExtension, sizeX, sizeY, '']);
         count.value++;
-        //draw();
+        // draw();
       }
     }
     reader.readAsDataURL(event.target.files[0])});
@@ -182,17 +183,17 @@ main {
 }
 
 .border-field {
-  flex: auto;
+  width: calc(100vw - 420px);
   height: calc(100vh - 100px);
-  background-color: #000000;
+  background-color: var(--bg-color);
   border-radius: 10px;
   border: 1px solid var(--gray-color);
-  overflow-y: scroll;
+  overflow-x: scroll;
 }
 
 #field {
   margin: 20px;
-  width: calc(100% - 40px);
+  height: calc(100% - 40px);
   background-color: white;
 }
 
