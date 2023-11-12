@@ -1,3 +1,5 @@
+import { default as tracer } from './tracer';
+
 function quickSortPK(arr) {
     if (arr.length < 2) return arr;
     let pivot = arr[0];
@@ -28,25 +30,28 @@ function quickSortObj(arr) {
     return quickSortObj(left).concat([pivot], quickSortObj(right));
 }
 
-export function get_pos1 (space, x_list, y_list, objects) {
+export function get_pos1 (space, x_list, y_list, obj) {
+    tracer.debug('get_pos1 called');
+    var objects = obj;
     let coordinates = [];
     let PK = [[[0, 0], [x_list, 20000]]];
     if (y_list === 0) {
         let p = 0;
-        quickSortObj(objects)
-        while (0<objects.length) {
+        let k = 0;
+        // quickSortObj(objects)
+        while (p<objects.length) {
             let chex_push = false
-            while (p<PK.length) {
-                if (objects[0][1]<PK[0][1][0] && objects[0][2]<PK[0][1][1]) {
+            while (k<PK.length) {
+                if (objects[p][1]<PK[0][1][0] && objects[p][2]<PK[0][1][1]) {
                     // ---------------
-                    coordinates.push([objects[0][0], PK[0][0][0]+space, (PK[0][0][1]+space)]);
+                    coordinates.push([objects[p][0], (PK[0][0][1]+space), (PK[0][0][0]+space)]);
                     PK.push([
-                        [PK[0][0][0], PK[0][0][1]+objects[0][2]+space], // cord pk
-                        [PK[0][1][0], PK[0][1][1]-(objects[0][2]+space)] // Шрина Высота pk размеры
+                        [PK[0][0][0], PK[0][0][1]+objects[p][2]+space], // cord pk
+                        [PK[0][1][0], PK[0][1][1]-(objects[p][2]+space)] // Шрина Высота pk размеры
                     ]);
                     PK.push([
-                        [PK[0][0][0]+objects[0][1]+space, PK[0][0][1]], // cord pk
-                        [PK[0][1][0]-(objects[0][1]+space), PK[0][1][1]] // Шрина Высота pk размеры
+                        [PK[0][0][0]+objects[p][1]+space, PK[0][0][1]], // cord pk
+                        [PK[0][1][0]-(objects[p][1]+space), PK[0][1][1]] // Шрина Высота pk размеры
                     ]);
                     PK.splice(0, 1); // удалили раб pk
                     // ---------------
@@ -57,7 +62,7 @@ export function get_pos1 (space, x_list, y_list, objects) {
                     console.log('ttt')
                     let chek_pos
                     while (z<PK.length) { // зачитска пересечений контейнеров
-                        let x_r = coordinates[coordinates.length-1][1]+objects[0][1];
+                        let x_r = coordinates[coordinates.length-1][1]+objects[p][1];
                         let y_r = coordinates[coordinates.length-1][2];
                         let x = coordinates[coordinates.length-1][1];
                         if (((x_r > PK[z][0][0]) && (x_r<(PK[z][0][0]+PK[z][1][0]))) &&
@@ -83,8 +88,8 @@ export function get_pos1 (space, x_list, y_list, objects) {
                             //     [PK_del[1][0], PK[PK.length - 2][1][1]] // Шрина Высота pk размеры
                             // ]);
                             PK.push([ // 2) or 2**
-                                [coordinates[coordinates.length - 1][1] + objects[0][1]+space, PK_del[0][1]], // cord pk
-                                [x_list - coordinates[coordinates.length - 1][1] + objects[0][1], PK[PK.length - 2][1][1]] // Шрина Высота pk размеры
+                                [coordinates[coordinates.length - 1][1] + objects[p][1]+space, PK_del[0][1]], // cord pk
+                                [x_list - coordinates[coordinates.length - 1][1] + objects[p][1], PK[PK.length - 2][1][1]] // Шрина Высота pk размеры
                             ]);
                             PK.push([ // 2*
                                 [PK_del[0][0], PK_del[0][1]], // cord pk
@@ -98,8 +103,8 @@ export function get_pos1 (space, x_list, y_list, objects) {
                                 [coordinates[coordinates.length - 1][1]-PK_del[0][0], PK_del[1][1]] // Шрина Высота pk размеры
                             ]);
                             PK.push([
-                                [PK_del[0][0]+objects[0][1]+space, PK_del[0][1]], // cord pk
-                                [PK_del[1][0]-objects[0][1], PK_del[1][1]] // Шрина Высота pk размеры
+                                [PK_del[0][0]+objects[p][1]+space, PK_del[0][1]], // cord pk
+                                [PK_del[1][0]-objects[p][1], PK_del[1][1]] // Шрина Высота pk размеры
                             ]);
                         }
                     }
@@ -121,20 +126,20 @@ export function get_pos1 (space, x_list, y_list, objects) {
                         m++
                     }
                     // проверка на вложеность контейнеров
-                    objects.splice(0, 1);
+                    p++;
                     chex_push = true
                     PK = quickSortPK(PK)
                     break
                 }
                 PK.push(PK[0]);
                 PK.splice(0, 1);
-                p++
+                k++
             }
             if (!chex_push) {
-                objects.push(objects[0]);
-                objects.splice(0, 1);
+                p++;
             }
         }
     }
-    return [coordinates, PK]
+    console.log(coordinates)
+    return coordinates
 }
