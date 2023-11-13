@@ -17,7 +17,7 @@ TODO
       <!-- Objects.vue -->
       <div class="objects">
         <!-- Example of object -->
-        <Item v-for="i in count" :id-export="objects[i-1][0]" :image-export="objects[i-1][1]" :name-export="objects[i-1][2]" :ext-export="objects[i-1][3]" :sizeX-export="objects[i-1][4]" :sizeY-export="objects[i-1][5]"></Item>
+        <Item v-for="i in count" :id-export="objects[i-1][0]" :sizeX-export="objects[i-1][1]" :sizeY-export="objects[i-1][2]" :image-export="objects[i-1][3]" :name-export="objects[i-1][4]" :ext-export="objects[i-1][5]"></Item>
       </div>
 
       <div class="input-wrapper">
@@ -52,7 +52,7 @@ TODO
 import Item from './Object.vue'
 import {ref, reactive} from "vue";
 //import {get_pos1, get_pos2} from "@/utils/get_coordinates";
-import { get_pos1 } from "@/utils/test.js";
+import { get_pos1, quickSortObj } from "@/utils/test.js";
 import { pxInMm } from "@/utils/pxInMm";
 import "@/utils/canvas2svg";
 // import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
@@ -98,12 +98,14 @@ const draw = () => {
   let canvas = document.getElementById("field");
   let ctx = canvas.getContext("2d");
   importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value);
+  quickSortObj(objects.value);
+  console.log(objects.value);
   if (importData.value.length > 0) { list.outputSVG = true }
   for (let i = 0; i < importData.value.length; i++) {
     var img = new Image();
-    img.src = objects.value[i][1];
-    img.width = img.width * pxInMm();
-    img.height = img.height * pxInMm();
+    img.src = objects.value[i][3];
+    img.width = pxInMm(img.width);
+    img.height = pxInMm(img.height);
     //console.log(img)
     ctx.drawImage(img, importData.value[i][1], importData.value[i][2], img.width, img.height);
   }
@@ -123,10 +125,10 @@ const readFile = (event) => {
       image.onload = () => {
         var fileExtension = event.target.files[0]['name'].split('.').at(-1);
         var fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
-        var sizeX = image.width * pxInMm();
-        var sizeY = image.height * pxInMm();
+        var sizeX = pxInMm(image.width);
+        var sizeY = pxInMm(image.height);
         exportData.value.push([count.value, sizeX, sizeY]);
-        objects.value.push([count.value, image.src, fileName, fileExtension, sizeX, sizeY]);
+        objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, '']);
         count.value++;
         //draw();
       }
