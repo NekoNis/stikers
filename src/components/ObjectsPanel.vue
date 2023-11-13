@@ -98,7 +98,7 @@ const draw = () => {
   let canvas = document.getElementById("field");
   let ctx = canvas.getContext("2d");
   importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value);
-  quickSortObj(objects.value);
+  objects.value = quickSortObj(objects.value);
   console.log(objects.value);
   if (importData.value.length > 0) { list.outputSVG = true }
   for (let i = 0; i < importData.value.length; i++) {
