@@ -17,7 +17,7 @@ TODO
       <!-- Objects.vue -->
       <div class="objects">
         <!-- Example of object -->
-        <Item v-for="i in count" :id-export="objects[i-1][0]" :image-export="objects[i-1][1]" :name-export="objects[i-1][2]" :ext-export="objects[i-1][3]" :sizeX-export="objects[i-1][4]" :sizeY-export="objects[i-1][5]"></Item>
+        <Item v-for="i in count" :id-export="objects[i-1][0]" :sizeX-export="objects[i-1][1]" :sizeY-export="objects[i-1][2]" :image-export="objects[i-1][3]" :name-export="objects[i-1][4]" :ext-export="objects[i-1][5]"></Item>
       </div>
 
       <div class="input-wrapper">
@@ -51,49 +51,68 @@ TODO
 
 import Item from './Object.vue'
 import {ref, reactive} from "vue";
-//import {get_pos1, get_pos2} from "@/helpers/get_coordinates";
-import { get_pos1 } from "@/helpers/test.js";
-import {pxInMm} from "@/helpers/utils";
-import "@/helpers/canvas2svg";
+//import {get_pos1, get_pos2} from "@/utils/get_coordinates";
+import { get_pos1, quickSortObj } from "@/utils/test.js";
+import { pxInMm } from "@/utils/pxInMm";
+import "@/utils/canvas2svg";
 // import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
-
+import { default as tracer } from '@/utils/tracer';
 
 
 // Информация о холсте
 const list = reactive({
   space: ref(5),
-  listX: ref(1270),
+  listX: ref(10000),
   listY: ref(0),
   outputSVG: ref(false)
 })
 const count = ref(0)
 
 // Список данных всех загруженных изображений
-const objects = ref([]) // [id.str, img.str, filename.str, fileext.str, sizeX.int, sizeY.int filters.str]
+const objects = ref([])
 
 // Список данных, которые пойдут на обработку
 const exportData = ref([])
-let tempData = []
 
 // Список обработанных данных
-const importData = ref([]) // [id.str, positionX:int, positionY:string]
+const importData = ref([]) // [id.string, positionX:int, positionY:string]
+
+let props = defineProps( {
+  countImport: Number,
+  idImport: String,
+  sizeXImport: Number,
+  sizeYImport: Number,
+})
+
+const dataImage = reactive({
+  idImage: props.idImport,
+  countImage: props.countImport,
+  widthImage: props.sizeXImport,
+  heightImage: props.sizeYImport,
+})
 
 
 
 const draw = () => {
+  tracer.debug('draw called');
   let canvas = document.getElementById("field");
   let ctx = canvas.getContext("2d");
-  importData.value = get_pos1(list.space, list.listX, list.listY, tempData);
+  importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value);
+  quickSortObj(objects.value);
+  console.log(objects.value);
   if (importData.value.length > 0) { list.outputSVG = true }
   for (let i = 0; i < importData.value.length; i++) {
     var img = new Image();
-    console.log(objects.value[i][1]);
-    img.src = objects.value[i][1];
-    ctx.drawImage(img, importData.value[i][1], importData.value[i][2]);
+    img.src = objects.value[i][3];
+    img.width = pxInMm(img.width);
+    img.height = pxInMm(img.height);
+    //console.log(img)
+    ctx.drawImage(img, importData.value[i][1], importData.value[i][2], img.width, img.height);
   }
 }
 
 const readFile = (event) => {
+  tracer.debug('readFile called');
   //let inputFile = document.getElementById('input-file');
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
@@ -103,20 +122,15 @@ const readFile = (event) => {
     reader.onloadend = () => {
       var image = new Image();
       image.src = imageURL;
-      console.log(event.target.files[0])
       image.onload = () => {
-        // exportData.value.push([count.value.toString(), image.width, image.height]);
-        // tempData.value.push([count.value.toString(), image.width, image.height]);
-        tempData.push([count.value.toString(), image.width, image.height]);
-        console.log(tempData)
         var fileExtension = event.target.files[0]['name'].split('.').at(-1);
         var fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
-        var sizeX = image.width;
-        var sizeY = image.height;
-        console.log(sizeX, sizeY)
-        objects.value.push([count.value.toString(), image.src, fileName, fileExtension, sizeX, sizeY, '']);
+        var sizeX = pxInMm(image.width);
+        var sizeY = pxInMm(image.height);
+        exportData.value.push([count.value, sizeX, sizeY]);
+        objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, '']);
         count.value++;
-        // draw();
+        //draw();
       }
     }
     reader.readAsDataURL(event.target.files[0])});

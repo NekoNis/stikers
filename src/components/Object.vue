@@ -27,7 +27,7 @@ const plusFunc = (variable, factor) => {
 }
 
 const minusFunc = (variable, factor) => {
-  if (dataImage[variable] <= 0) {
+  if (dataImage[variable] >= 0) {
     dataImage[variable] -= 1 * factor;
   }
 }
@@ -50,17 +50,14 @@ const panelView = () => {
 </script>
 
 <template>
-  <div id="object" :class=dataImage.openPanel>
+  <div class="object" :class=dataImage.openPanel>
     <div class="info-panel">
       <div class="img-image">
         <img id="picture" :src="imageExport">
       </div>
       <div class="desc">
         <div class="img-name" :class="idExport">
-          <slot>{{ nameExport }}</slot>
-        </div>
-        <div class="img-size">
-          <p><slot>{{ sizeXExport + "x" + sizeYExport }}</slot></p>
+          <p :title="nameExport">{{ nameExport }}</p>
         </div>
       </div>
       <div class="data-image">
@@ -101,7 +98,7 @@ const panelView = () => {
 </template>
 
 <style scoped>
-  #object {
+  .object {
     display: flex;
     width: 100%;
     margin-bottom: -1px;
@@ -155,8 +152,8 @@ const panelView = () => {
     margin-left: 10px;
     font-family: 'Open Sans', sans-serif;
     font-size: 1em;
-    height: 60px;
-    width: 246px;
+    height: 40px;
+    width: 230px;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -165,7 +162,7 @@ const panelView = () => {
   }
 
   .img-size {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     margin-left: 10px;
   }
 
