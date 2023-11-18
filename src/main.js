@@ -1,7 +1,14 @@
 import './assets/main.css'
-
-import { createApp } from 'vue'
+import { default as tracer } from './utils/tracer';
+import {createApp, ref} from 'vue'
 import App from './App.vue'
+
+export const objects = ref([])
+
+
+export default {
+    tracer,
+}
 
 
 createApp(App).mount('#app')

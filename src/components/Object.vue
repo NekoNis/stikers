@@ -1,9 +1,11 @@
 <script setup>
 
-import {reactive} from "vue";
+import {reactive, ref} from "vue";
+import { objects } from '@/main.js';
+
 
 let props = defineProps( {
-  idExport: String,
+  idExport: Number,
   imageExport: String,
   nameExport: String,
   extExport: String,
@@ -19,16 +21,32 @@ const dataImage = reactive({
   heightImage: props.sizeYExport,
 })
 
-
-
+// obj.value.push([props.idExport, dataImage.countImage, dataImage.widthImage, dataImage.heightImage]);
+// console.log(obj.value)
 
 const plusFunc = (variable, factor) => {
+  dataImage[variable] = Number(dataImage[variable])
   dataImage[variable] += 1 * factor;
+  if (variable == 'countImage') {
+    objects.value[props.idExport][6] += 1 * factor;
+  } else if (variable == 'widthImage') {
+    objects.value[props.idExport][1] += 1 * factor;
+  } else if (variable == 'heightImage') {
+    objects.value[props.idExport][2] += 1 * factor;
+  }
 }
 
 const minusFunc = (variable, factor) => {
+  dataImage[variable] = Number(dataImage[variable])
   if (dataImage[variable] >= 0) {
     dataImage[variable] -= 1 * factor;
+    if (variable == 'countImage') {
+      objects.value[props.idExport][6] -= 1 * factor;
+    } else if (variable == 'widthImage') {
+      objects.value[props.idExport][1] -= 1 * factor;
+    } else if (variable == 'heightImage') {
+      objects.value[props.idExport][2] -= 1 * factor;
+    }
   }
 }
 
