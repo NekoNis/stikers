@@ -21,7 +21,7 @@ TODO
       </div>
 
       <div class="input-wrapper">
-        <input type="file" id="input-file" style="width: 0;" accept=".jpg, .jpeg, .png" @change="readFile">
+        <input type="file" id="input-file" style="width: 0;" accept=".jpg, .jpeg, .png" @change="readFileM" multiple>
         <label for="input-file" class="input-styled">
           <span class="icon-input">Загрузить новый стикер</span>
         </label>
@@ -53,7 +53,6 @@ import Item from './Object.vue'
 import {ref, reactive} from "vue";
 //import {get_pos1, get_pos2} from "@/utils/get_coordinates";
 import { get_pos1, quickSortObj } from "@/utils/test.js";
-import { pxInMm } from "@/utils/pxInMm";
 import "@/utils/canvas2svg";
 // import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
 import { default as tracer } from '@/utils/tracer';
@@ -61,8 +60,8 @@ import { default as tracer } from '@/utils/tracer';
 
 // Информация о холсте
 const list = reactive({
-  space: ref(5),
-  listX: ref(10000),
+  space: ref(75),
+  listX: ref(20000),
   listY: ref(0),
   outputSVG: ref(false)
 })
@@ -99,15 +98,12 @@ const draw = () => {
   let ctx = canvas.getContext("2d");
   importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value);
   objects.value = quickSortObj(objects.value);
-  console.log(objects.value);
   if (importData.value.length > 0) { list.outputSVG = true }
   for (let i = 0; i < importData.value.length; i++) {
     var img = new Image();
     img.src = objects.value[i][3];
-    img.width = pxInMm(img.width);
-    img.height = pxInMm(img.height);
     //console.log(img)
-    ctx.drawImage(img, importData.value[i][1], importData.value[i][2], img.width, img.height);
+    ctx.drawImage(img, importData.value[i][1], importData.value[i][2]);
   }
 }
 
@@ -125,8 +121,8 @@ const readFile = (event) => {
       image.onload = () => {
         var fileExtension = event.target.files[0]['name'].split('.').at(-1);
         var fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
-        var sizeX = pxInMm(image.width);
-        var sizeY = pxInMm(image.height);
+        var sizeX = image.width;
+        var sizeY = image.height;
         exportData.value.push([count.value, sizeX, sizeY]);
         objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, '']);
         count.value++;
@@ -135,6 +131,32 @@ const readFile = (event) => {
     }
     reader.readAsDataURL(event.target.files[0])});
 }
+
+const readFileM = ( inputFile ) => {
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < inputFile.target.files.length; i++) {
+      let reader = new FileReader();
+      let imageURL
+      reader.onerror = () => reject(new DOMException("Problem parsing input file."))
+      reader.onload = () => resolve(imageURL = reader.result)
+      reader.onloadend = () => {
+        var image = new Image();
+        image.src = imageURL;
+        image.onload = () => {
+          var fileExtension = inputFile.target.files[i]['name'].split('.').at(-1);
+          var fileName = inputFile.target.files[i]['name'].slice(0, ((fileExtension.length * -1) - 1));
+          var sizeX = image.width;
+          var sizeY = image.height;
+          exportData.value.push([count.value, sizeX, sizeY]);
+          objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, '']);
+          count.value++;
+          //draw();
+        }
+      }
+      reader.readAsDataURL(inputFile.target.files[i])
+    }
+  });
+};
 
 </script>
 
@@ -208,7 +230,7 @@ main {
 #field {
   margin: 20px;
   height: calc(100% - 40px);
-  background-color: white;
+  background-color: yellow;
 }
 
 .calculator-panel {
