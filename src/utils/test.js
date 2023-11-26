@@ -52,6 +52,7 @@ export function quickSortObj(arr) {
     for (let i = 1; i < arr.length; i++) {
         if (pivot[1] < arr[i][1]) {
             left.push(arr[i]);
+          left.push(arr[i]);
         } else {
             right.push(arr[i]);
         }
@@ -66,6 +67,7 @@ export function get_pos1 (space, x_list, y_list, objs) {
     tracer.debug('get_pos1 called');
     let coordinates = [];
     let PK = [[[0, 0], [1000000, x_list]]];
+    let PK = [[[0, 0], [10000, x_list]]];
     if (y_list === 0) {
         let p = 0;
         objs = quickSortObj(objs)
@@ -85,6 +87,11 @@ export function get_pos1 (space, x_list, y_list, objs) {
                     ]);
                     PK.push([ // ++
                         [PK[0][0][0]+objs[i][1]+space, PK[0][0][1]], // cord pk
+                        [PK[0][0][0], PK[0][0][1]+objs[i][2]+space],  // cord pk
+                        [PK[0][1][0], PK[0][1][1]-(objs[i][2]+space)] // Шрина Высота pk размеры
+                    ]);
+                    PK.push([ // ++
+                        [PK[0][0][0]+objs[i][1]+space, PK[0][0][1]],  // cord pk
                         [PK[0][1][0]-(objs[i][1]+space), PK[0][1][1]] // Шрина Высота pk размеры
                     ]);
                     PK.splice(0, 1); // удалили раб pk
@@ -113,6 +120,18 @@ export function get_pos1 (space, x_list, y_list, objs) {
                             PK.splice(z, 1);
                             console.log('sfsfs')
                             break
+                                PK_del = PK[z];
+                                PK.splice(z, 1);
+                                console.log('sfsfs')
+                                break
+                        }
+                        if (((x_r_h > PK[z][0][0]) && (x_r_h < (PK[z][0][0]+PK[z][1][0]))) &&
+                            ((y_r_l > PK[z][0][1]) && (y_r_l < (PK[z][0][1]+PK[z][1][1])))) {
+                                chek_pos = true
+                                PK_del = PK[z];
+                                PK.splice(z, 1);
+                                console.log('sfsfs')
+                                break
                         }
                         z++
                     }
@@ -163,6 +182,7 @@ export function get_pos1 (space, x_list, y_list, objs) {
                         m++
                     }
                     // проверка на вложеность контейнеров
+
                     // Проверка на пересечение контейнеров
                     let z1 = 0
                     let z2 = 0
@@ -192,6 +212,9 @@ export function get_pos1 (space, x_list, y_list, objs) {
                             z2++
                         }
                         z1++
+                        z2++
+                        }
+                    z1++
                     }
                     // Проверка на пересечение объекта контейнеров
                     //----------------

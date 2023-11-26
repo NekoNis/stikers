@@ -1,4 +1,4 @@
-import {get_pos2} from "@/helpers/get_coordinates";
+import {get_pos2} from "@/utils/get_coordinates";
 
 // This function draw all got images on canvas
 
