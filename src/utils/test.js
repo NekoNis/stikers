@@ -8,9 +8,9 @@ function quickSortPK(arr) {
     const right = [];
     for (let i = 1; i < arr.length; i++) {
         if (pivot[0][0] > arr[i][0][0]) {
-          left.push(arr[i]);
+            left.push(arr[i]);
         } else {
-          right.push(arr[i]);
+            right.push(arr[i]);
         }
     }
     return quickSortPK(left).concat([pivot], quickSortPK(right));
@@ -51,9 +51,10 @@ export function quickSortObj(arr) {
     const right = [];
     for (let i = 1; i < arr.length; i++) {
         if (pivot[1] < arr[i][1]) {
+            left.push(arr[i]);
           left.push(arr[i]);
         } else {
-          right.push(arr[i]);
+            right.push(arr[i]);
         }
     }
     return quickSortObj(left).concat([pivot], quickSortObj(right));
@@ -65,6 +66,7 @@ export function get_pos1 (space, x_list, y_list, objs) {
     // var objs = Object.create(objstt)
     tracer.debug('get_pos1 called');
     let coordinates = [];
+    let PK = [[[0, 0], [1000000, x_list]]];
     let PK = [[[0, 0], [10000, x_list]]];
     if (y_list === 0) {
         let p = 0;
@@ -80,6 +82,11 @@ export function get_pos1 (space, x_list, y_list, objs) {
                     // ---------------
                     coordinates.push([objs[i][0], PK[0][0][0]+space, PK[0][0][1]+space]);
                     PK.push([ // ++
+                        [PK[0][0][0], PK[0][0][1]+objs[i][2]+space], // cord pk
+                        [PK[0][1][0], PK[0][1][1]-(objs[i][2]+space)] // Шрина Высота pk размеры
+                    ]);
+                    PK.push([ // ++
+                        [PK[0][0][0]+objs[i][1]+space, PK[0][0][1]], // cord pk
                         [PK[0][0][0], PK[0][0][1]+objs[i][2]+space],  // cord pk
                         [PK[0][1][0], PK[0][1][1]-(objs[i][2]+space)] // Шрина Высота pk размеры
                     ]);
@@ -101,6 +108,18 @@ export function get_pos1 (space, x_list, y_list, objs) {
                         let y_r_l = coordinates.at(-1)[1]+objs[i][2];
                         if (((x_r_h > PK[z][0][0]) && (x_r_h < (PK[z][0][0]+PK[z][1][0]))) &&
                             ((y_r_h > PK[z][0][1]) && (y_r_h < (PK[z][0][1]+PK[z][1][1])))) {
+                            PK_del = PK[z];
+                            PK.splice(z, 1);
+                            console.log('sfsfs')
+                            break
+                        }
+                        if (((x_r_h > PK[z][0][0]) && (x_r_h < (PK[z][0][0]+PK[z][1][0]))) &&
+                            ((y_r_l > PK[z][0][1]) && (y_r_l < (PK[z][0][1]+PK[z][1][1])))) {
+                            chek_pos = true
+                            PK_del = PK[z];
+                            PK.splice(z, 1);
+                            console.log('sfsfs')
+                            break
                                 PK_del = PK[z];
                                 PK.splice(z, 1);
                                 console.log('sfsfs')
@@ -147,7 +166,6 @@ export function get_pos1 (space, x_list, y_list, objs) {
                         }
                     }
                     // ----------------
-
                     // проверка на вложеность контейнеров
                     let m = 0
                     while (m<PK.length) {
@@ -191,6 +209,9 @@ export function get_pos1 (space, x_list, y_list, objs) {
                                 PK.splice(z1, 1);
                                 break
                             }
+                            z2++
+                        }
+                        z1++
                         z2++
                         }
                     z1++
