@@ -31,7 +31,7 @@ TODO
     <main>
       <div class="border-field">
         <template v-if="list.listY == 0">
-          <canvas id="field" :width="10000" :height="list.listX"></canvas>
+          <canvas id="field" :width="20000" :height="list.listX"></canvas>
         </template>
         <template v-else>
           <canvas id="field" :width="list.listY" :height="list.listX"></canvas>
@@ -53,6 +53,7 @@ import Item from './Object.vue'
 import {ref, reactive} from "vue";
 //import {get_pos1, get_pos2} from "@/utils/get_coordinates";
 import { get_pos1, quickSortObj } from "@/utils/test.js";
+// import { get_pos1 } from "@/utils/Rewrite"
 import "@/utils/canvas2svg";
 // import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
 import { default as tracer } from '@/utils/tracer';
@@ -97,6 +98,8 @@ const draw = () => {
   let canvas = document.getElementById("field");
   let ctx = canvas.getContext("2d");
   importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value);
+  ctx.fillStyle = 'yellow';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   objects.value = quickSortObj(objects.value);
   if (importData.value.length > 0) { list.outputSVG = true }
   for (let i = 0; i < importData.value.length; i++) {
@@ -123,7 +126,7 @@ const readFile = (event) => {
         var fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
         var sizeX = image.width;
         var sizeY = image.height;
-        exportData.value.push([count.value, sizeX, sizeY]);
+        exportData.value.push([count.value.toString(), sizeX, sizeY]);
         objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, '']);
         count.value++;
         //draw();

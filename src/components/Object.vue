@@ -3,7 +3,7 @@
 import {reactive} from "vue";
 
 let props = defineProps( {
-  idExport: String,
+  idExport: Number,
   imageExport: String,
   nameExport: String,
   extExport: String,
