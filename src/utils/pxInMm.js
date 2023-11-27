@@ -1,13 +1,14 @@
 import { default as tracer } from './tracer';
 
-// This function translate cm to px
-export function pxInMm(variable) {
-export function pxInMm(varebel) {
+// This function translate mm to px
+export function convertPxToMm(variable) {
     tracer.debug('pxInMm called');
-    var diagInPx = Math.sqrt(Math.pow(window.screen.width, 2) + Math.pow(window.screen.height, 2));
-    var realDiagonal = Math.ceil(diagInPx / 96);
-    var realDPI = diagInPx/realDiagonal;
-    var pxInCm = Math.ceil(realDPI / 2.7);
-    return Math.ceil(1 * variable);
-    return Math.ceil(pxInCm / 10 * varebel);
+    const maxHeightInMm = 297;
+    const canvasHeightInPx = 602;
+    let pxInMm = 96 / 25.4;
+    let maxHeightInPx = maxHeightInMm * pxInMm;
+    let factorVar = variable / pxInMm
+    let variableCm = variable / factorVar * 50;
+    let factor = maxHeightInPx / canvasHeightInPx;
+    return Math.ceil(variableCm / factor);
 }

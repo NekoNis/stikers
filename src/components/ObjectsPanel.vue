@@ -33,9 +33,9 @@ TODO
     </nav>
 
     <main>
-      <div class="border-field">
+      <div class="border-field" id="border-field">
         <template v-if="list.listY == 0">
-          <canvas id="field" :width="20000" :height="list.listX"></canvas>
+          <canvas id="field" :width="10000" :height="list.listX"></canvas>
         </template>
         <template v-else>
           <canvas id="field" :width="list.listY" :height="list.listX"></canvas>
@@ -54,16 +54,13 @@ TODO
 <script setup>
 
 import Item from './Object.vue'
-import {ref, reactive} from "vue";
+import {ref, reactive, onMounted} from "vue";
 //import {get_pos1, get_pos2} from "@/utils/get_coordinates";
-import { get_pos1, quickSortObj } from "@/utils/test.js";
-
-import {pxInMm} from "@/utils/pxInMm";
+import { get_pos1, quickSortObj } from "@/utils/test";
+import {convertPxToMm as pxInMm} from "@/utils/pxInMm";
+import { multiplyImage } from "@/utils/multiplyImage";
+import { getSizeX } from "@/utils/getSizeX";
 //import "@/utils/canvas2svg";
-
-// import { get_pos1 } from "@/utils/Rewrite"
-import "@/utils/canvas2svg";
-
 // import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
 import { objects } from '@/main.js';
 
@@ -71,8 +68,8 @@ import { objects } from '@/main.js';
 
 // Информация о холсте
 const list = reactive({
-  space: ref(75),
-  listX: ref(20000),
+  space: ref(5),
+  listX: ref(602),
   listY: ref(0),
   outputSVG: ref(false)
 })
@@ -84,12 +81,26 @@ const exportData = ref([])
 // Список обработанных данных
 const importData = ref([]) // [id.string, positionX:int, positionY:string]
 
+const multiply = ref(0)
+const canvasSize = ref([0, 0])
+const pxToMm = ref(0)
 
 
-const countImages = () => {
+
+onMounted(() => {
+  multiply.value = multiplyImage(document.getElementById("field").offsetHeight, list.listX);
+  canvasSize.value[0] = document.getElementById("field").offsetWidth;
+  canvasSize.value[1] = document.getElementById("field").offsetHeight;
+  pxToMm.value = 96 / 25.4;
+})
+
+
+
+const countImages = (multiply, canvasHeight) => {
   let data = []
   for (let i = 0; i < objects.value.length; i++) {
     for (let j = 0; j < objects.value[i][6]; j++) {
+      console.log(objects.value[i][1], objects.value[i][2])
       data.push([objects.value[i][0], objects.value[i][1], objects.value[i][2], objects.value[i][3]]);
     }
   }
@@ -97,28 +108,19 @@ const countImages = () => {
 }
 
 const draw = () => {
-  console.log('called')
+  console.log('draw called');
   let canvas = document.getElementById("field");
   let ctx = canvas.getContext("2d");
-  exportData.value = countImages();
+  exportData.value = countImages(multiply, canvas.offsetHeight);
   importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value)
   console.log(importData.value.length)
-  importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value);
-  ctx.fillStyle = 'yellow';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  objects.value = quickSortObj(objects.value);
   if (importData.value.length > 0) { list.outputSVG = true }
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < importData.value.length; i++) {
-    var img = new Image();
-
+    let img = new Image();
     img.src = exportData.value[i][3];
     ctx.drawImage(img, importData.value[i][1], importData.value[i][2], exportData.value[i][1], exportData.value[i][2]);
-    img.src = objects.value[i][3];
-    //console.log(img)
-    ctx.drawImage(img, importData.value[i][1], importData.value[i][2]);
-
   }
 
   // for (let i = 0; i < importData.length; i++) {
@@ -136,19 +138,13 @@ const readFile = (event) => {
     reader.onerror = () => reject(new DOMException("Problem parsing input file."))
     reader.onload = () => resolve(imageURL = reader.result)
     reader.onloadend = () => {
-      var image = new Image();
+      let image = new Image();
       image.src = imageURL;
       image.onload = () => {
-        var fileExtension = event.target.files[0]['name'].split('.').at(-1);
-        var fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
-
+        let fileExtension = event.target.files[0]['name'].split('.').at(-1);
+        let fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
         exportData.value.push([count.value, sizeX, sizeY]);
         objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, 1, '']);
-        var sizeX = image.width;
-        var sizeY = image.height;
-        exportData.value.push([count.value.toString(), sizeX, sizeY]);
-        objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, '']);
-
         count.value++;
         //draw();
       }
@@ -164,23 +160,17 @@ const readFileM = ( inputFile ) => {
       reader.onerror = () => reject(new DOMException("Problem parsing input file."))
       reader.onload = () => resolve(imageURL = reader.result)
       reader.onloadend = () => {
-        var image = new Image();
+        let image = new Image();
         image.src = imageURL;
         image.onload = () => {
-          var fileExtension = inputFile.target.files[i]['name'].split('.').at(-1);
-          var fileName = inputFile.target.files[i]['name'].slice(0, ((fileExtension.length * -1) - 1));
-
-          var sizeX = image.width / 2;
-          var sizeY = image.height / 2;
+          let fileExtension = inputFile.target.files[i]['name'].split('.').at(-1);
+          let fileName = inputFile.target.files[i]['name'].slice(0, ((fileExtension.length * -1) - 1));
+          let sizeY = pxInMm(image.height * multiply.value);
+          let sizeX = getSizeX(image.width, image.height, sizeY, multiply.value);
           //exportData.value.push([count.value, image.width, image.height]);
           objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, 1, '']);
           console.log(objects.value)
-
-          var sizeX = image.width;
-          var sizeY = image.height;
-          exportData.value.push([count.value, sizeX, sizeY]);
-          objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, '']);
-
+          console.log(multiply.value)
           count.value++;
           //draw();
         }
@@ -268,7 +258,7 @@ main {
 #field {
   margin: 20px;
   height: calc(100% - 40px);
-  background-color: yellow;
+  background-color: white;
 }
 
 .calculator-panel {
