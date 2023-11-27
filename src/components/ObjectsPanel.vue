@@ -5,11 +5,9 @@ TODO
   react.js
   async await (js)
   ES
-  чистые функции
-  javascript - arrays
   StickersCalculator 20/366
-  ! шаблоны проектирования
-  reactive для сбора всех переменных
+  при наведении выводить полное название файла (title)
+  фильтры
 -->
 
 
@@ -17,11 +15,9 @@ TODO
   <div class="stickers-calculator">
     <nav>
       <!-- Objects.vue -->
-      <div class="objects-field">
-        <div class="objects">
-          <!-- Example of object -->
-          <Item v-for="i in count" :id-export="objects[i-1][0]" :sizeX-export="objects[i-1][1]" :sizeY-export="objects[i-1][2]" :image-export="objects[i-1][3]" :name-export="objects[i-1][4]" :ext-export="objects[i-1][5]"></Item>
-        </div>
+      <div class="objects">
+        <!-- Example of object -->
+        <Item v-for="i in count" :id-export="objects[i-1][0]" :sizeX-export="objects[i-1][1]" :sizeY-export="objects[i-1][2]" :image-export="objects[i-1][3]" :name-export="objects[i-1][4]" :ext-export="objects[i-1][5]"></Item>
       </div>
 
       <div class="input-wrapper">
@@ -56,30 +52,37 @@ TODO
 import Item from './Object.vue'
 import {ref, reactive, onMounted} from "vue";
 //import {get_pos1, get_pos2} from "@/utils/get_coordinates";
+
 import { get_pos1, quickSortObj } from "@/utils/test";
 import {convertPxToMm as pxInMm} from "@/utils/pxInMm";
 import { multiplyImage } from "@/utils/multiplyImage";
 import { getSizeX } from "@/utils/getSizeX";
 //import "@/utils/canvas2svg";
-// import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
-import { objects } from '@/main.js';
 
+// import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
+import { default as tracer } from '@/utils/tracer';
 
 
 // Информация о холсте
 const list = reactive({
+
   space: ref(5),
   listX: ref(602),
+
   listY: ref(0),
   outputSVG: ref(false)
 })
 const count = ref(0)
+
+// Список данных всех загруженных изображений
+const objects = ref([])
 
 // Список данных, которые пойдут на обработку
 const exportData = ref([])
 
 // Список обработанных данных
 const importData = ref([]) // [id.string, positionX:int, positionY:string]
+
 
 const multiply = ref(0)
 const canvasSize = ref([0, 0])
@@ -114,23 +117,19 @@ const draw = () => {
   exportData.value = countImages(multiply, canvas.offsetHeight);
   importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value)
   console.log(importData.value.length)
+
   if (importData.value.length > 0) { list.outputSVG = true }
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < importData.value.length; i++) {
+
     let img = new Image();
     img.src = exportData.value[i][3];
     ctx.drawImage(img, importData.value[i][1], importData.value[i][2], exportData.value[i][1], exportData.value[i][2]);
-  }
 
-  // for (let i = 0; i < importData.length; i++) {
-  //   ctx.fillRect(importData[1][i][0][0], importData[1][i][0][1], importData[1][i][1][0], importData[1][i][1][1]);
-  //   ctx.stroke();
-  // }
-  // console.log(importData)
+  }
 }
 
 const readFile = (event) => {
+  tracer.debug('readFile called');
   //let inputFile = document.getElementById('input-file');
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
@@ -196,7 +195,7 @@ nav {
   flex-direction: column;
 }
 
-.objects-field {
+.objects {
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
@@ -205,12 +204,6 @@ nav {
   border-radius: 10px;
   border: 1px solid var(--gray-color);
   margin-bottom: 10px;
-}
-
-.objects {
-  display: flex;
-  flex-direction: column;
-  flex: auto;
 }
 
 .input-wrapper {

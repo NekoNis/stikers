@@ -1,6 +1,5 @@
 import { default as tracer } from './tracer';
 
-// This function translate mm to px
 export function convertPxToMm(variable) {
     tracer.debug('pxInMm called');
     const maxHeightInMm = 297;
