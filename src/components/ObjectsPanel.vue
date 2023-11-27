@@ -1,128 +1,304 @@
-<script setup>
-import Item from './Object.vue'
-import {onMounted, ref} from "vue";
-
-const objects = ref()
-const count = ref(1)
-const loaded = ref(false)
-function countMinusFunc(event) {if (event) {if (count.value != 0) {count.value--}}}
-/*
-изучить:
+<!--
+TODO
+ изучить:
   жизненный цикл компонентов
   react.js
-*/
+  async await (js)
+  ES
+  чистые функции
+  javascript - arrays
+  StickersCalculator 20/366
+  ! шаблоны проектирования
+  reactive для сбора всех переменных
+-->
 
-onMounted(() => {
-  count.value;
 
-  let inputFiles = document.getElementById("input-file")
-  inputFiles.addEventListener('change', event => {
-    // Очищаем body от возможных старых имён файлов
-    [...document.body.children].slice(1).map(i=>i.remove());
-    // Добавляем новые имена файлов
-    [...event.target.files].map(i=>{
-      let newp = document.createElement('p');
-      newp.innerText = i.name;
-      document.body.append(newp);
-    })
-  });
+<template>
+  <div class="stickers-calculator">
+    <nav>
+      <!-- Objects.vue -->
+      <div class="objects-field">
+        <div class="objects">
+          <!-- Example of object -->
+          <Item v-for="i in count" :id-export="objects[i-1][0]" :sizeX-export="objects[i-1][1]" :sizeY-export="objects[i-1][2]" :image-export="objects[i-1][3]" :name-export="objects[i-1][4]" :ext-export="objects[i-1][5]"></Item>
+        </div>
+      </div>
+
+      <div class="input-wrapper">
+        <input type="file" id="input-file" style="width: 0;" accept=".jpg, .jpeg, .png" @change="readFileM" multiple>
+        <label for="input-file" class="input-styled">
+          <span class="icon-input">Загрузить новый стикер</span>
+        </label>
+      </div>
+    </nav>
+
+    <main>
+      <div class="border-field">
+        <template v-if="list.listY == 0">
+          <canvas id="field" :width="20000" :height="list.listX"></canvas>
+        </template>
+        <template v-else>
+          <canvas id="field" :width="list.listY" :height="list.listX"></canvas>
+        </template>
+      </div>
+      <div class="calculator-panel">
+        <div class="button-calculator">
+          <button id="place-an-image" @click="draw">Рассчитать</button>
+          <button id="send-to-prod">Отправить</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script setup>
+
+import Item from './Object.vue'
+import {ref, reactive} from "vue";
+//import {get_pos1, get_pos2} from "@/utils/get_coordinates";
+import { get_pos1, quickSortObj } from "@/utils/test.js";
+
+import {pxInMm} from "@/utils/pxInMm";
+//import "@/utils/canvas2svg";
+
+// import { get_pos1 } from "@/utils/Rewrite"
+import "@/utils/canvas2svg";
+
+// import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
+import { objects } from '@/main.js';
+
+
+
+// Информация о холсте
+const list = reactive({
+  space: ref(75),
+  listX: ref(20000),
+  listY: ref(0),
+  outputSVG: ref(false)
 })
+const count = ref(0)
+
+// Список данных, которые пойдут на обработку
+const exportData = ref([])
+
+// Список обработанных данных
+const importData = ref([]) // [id.string, positionX:int, positionY:string]
+
+
+
+const countImages = () => {
+  let data = []
+  for (let i = 0; i < objects.value.length; i++) {
+    for (let j = 0; j < objects.value[i][6]; j++) {
+      data.push([objects.value[i][0], objects.value[i][1], objects.value[i][2], objects.value[i][3]]);
+    }
+  }
+  return data;
+}
+
+const draw = () => {
+  console.log('called')
+  let canvas = document.getElementById("field");
+  let ctx = canvas.getContext("2d");
+  exportData.value = countImages();
+  importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value)
+  console.log(importData.value.length)
+  importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value);
+  ctx.fillStyle = 'yellow';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  objects.value = quickSortObj(objects.value);
+  if (importData.value.length > 0) { list.outputSVG = true }
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < importData.value.length; i++) {
+    var img = new Image();
+
+    img.src = exportData.value[i][3];
+    ctx.drawImage(img, importData.value[i][1], importData.value[i][2], exportData.value[i][1], exportData.value[i][2]);
+    img.src = objects.value[i][3];
+    //console.log(img)
+    ctx.drawImage(img, importData.value[i][1], importData.value[i][2]);
+
+  }
+
+  // for (let i = 0; i < importData.length; i++) {
+  //   ctx.fillRect(importData[1][i][0][0], importData[1][i][0][1], importData[1][i][1][0], importData[1][i][1][1]);
+  //   ctx.stroke();
+  // }
+  // console.log(importData)
+}
+
+const readFile = (event) => {
+  //let inputFile = document.getElementById('input-file');
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    let imageURL
+    reader.onerror = () => reject(new DOMException("Problem parsing input file."))
+    reader.onload = () => resolve(imageURL = reader.result)
+    reader.onloadend = () => {
+      var image = new Image();
+      image.src = imageURL;
+      image.onload = () => {
+        var fileExtension = event.target.files[0]['name'].split('.').at(-1);
+        var fileName = event.target.files[0]['name'].slice(0, ((fileExtension.length * -1) - 1));
+
+        exportData.value.push([count.value, sizeX, sizeY]);
+        objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, 1, '']);
+        var sizeX = image.width;
+        var sizeY = image.height;
+        exportData.value.push([count.value.toString(), sizeX, sizeY]);
+        objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, '']);
+
+        count.value++;
+        //draw();
+      }
+    }
+    reader.readAsDataURL(event.target.files[0])});
+}
+
+const readFileM = ( inputFile ) => {
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < inputFile.target.files.length; i++) {
+      let reader = new FileReader();
+      let imageURL
+      reader.onerror = () => reject(new DOMException("Problem parsing input file."))
+      reader.onload = () => resolve(imageURL = reader.result)
+      reader.onloadend = () => {
+        var image = new Image();
+        image.src = imageURL;
+        image.onload = () => {
+          var fileExtension = inputFile.target.files[i]['name'].split('.').at(-1);
+          var fileName = inputFile.target.files[i]['name'].slice(0, ((fileExtension.length * -1) - 1));
+
+          var sizeX = image.width / 2;
+          var sizeY = image.height / 2;
+          //exportData.value.push([count.value, image.width, image.height]);
+          objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, 1, '']);
+          console.log(objects.value)
+
+          var sizeX = image.width;
+          var sizeY = image.height;
+          exportData.value.push([count.value, sizeX, sizeY]);
+          objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, '']);
+
+          count.value++;
+          //draw();
+        }
+      }
+      reader.readAsDataURL(inputFile.target.files[i])
+    }
+  });
+};
 
 </script>
 
-<template>
-  <main>
-    <template v-if="loaded === false">
-      <button @click="loaded = true">ема...</button>
-      <div class="input-wrapper-first">
-        <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png" multiple>
-        <label for="input-file" class="input-styled">
-          <span class="icon-input"><img class="input-icon" src="./icons/IconUpload.svg" alt="Выбрать файл"></span>
-        </label>
-      </div>
-    </template>
-    <template v-else-if="loaded === true">
-      <div class="load-objects">
-        <!-- Example of object -->
-        <Item v-for="i in 10">
-          <template #name>name.png</template>
-          <template #size>128x128</template>
-          <template #count>
-            <button @click="countMinusFunc" style="margin-right: 5px">-</button>
-            <input v-model="count" style="margin-right: 5px; width: 20px; height: 20px; border: 0; text-align: center">
-            <button @click="count++" style="margin-right: 5px">+</button>
-          </template>
-        </Item>
-        <div class="input-wrapper-second">
-          <input type="file" id="input-file" class="input-hidden" style="width: 0;" accept=".jpg, .jpeg, .png" multiple>
-          <label for="input-file" class="input-styled">
-            <span class="icon-input"><img class="input-icon" src="./icons/IconUpload.svg" alt="Выбрать файл"></span>
-          </label>
-        </div>
-      </div>
-    </template>
-  </main>
-  <section>
-    <!-- There will be stickers here soon -->
-  </section>
-</template>
-
-
 <style scoped>
-  /* style */
-  .load-objects {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 25%;
-    background-color: #000;
-  }
 
-  .input-hidden {
-    opacity: 0;
-    visibility: hidden;
-  }
+.stickers-calculator {
+  display: flex;
+}
 
-  .input-wrapper-first {
-    background-color: rgb(204 0 0);
-    position: absolute;
-    left: 50px;
-    top: 50px;
-    width: 400px;
-    height: 100px;
-    border-radius: 40px;
-  }
+nav {
+  width: 400px;
+  height: 100vh;
+  margin-right: 10px;
+  display: flex;
+  flex-direction: column;
+}
 
-  .icon-input {
-    width: 100%;
-    height: 100%;
-  }
+.objects-field {
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+  background-color: var(--bg-color);
+  border-radius: 10px;
+  border: 1px solid var(--gray-color);
+  margin-bottom: 10px;
+}
 
-  .input-wrapper-first .icon-input {
-    position: absolute;
-  }
+.objects {
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+}
 
-  .input-wrapper-first .input-icon {
-    position: relative;
-    display: flex;
-    margin: auto;
-    width: 50px;
-    top: 25px;
-  }
+.input-wrapper {
+  align-self: flex-end;
+  display: flex;
+  margin-top: 10px;
+}
 
-  .input-wrapper-second {
-    background-color: rgb(204 0 0);
-    position: relative;
-    height: 70px;
-    width: 100%;
-    margin-top: 1px;
-  }
+.input-styled {
+  display: flex;
+  background-color: var(--red-color);
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  width: 400px;
+  height: 80px;
+  cursor: pointer;
+}
 
-  .input-wrapper-second .input-icon {
-    position: relative;
-    display: flex;
-    margin: auto;
-    width: 30px;
-  }
+.icon-input {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+
+
+main {
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+  margin-left: 10px;
+}
+
+.border-field {
+  width: calc(100vw - 420px);
+  height: calc(100vh - 100px);
+  background-color: var(--bg-color);
+  border-radius: 10px;
+  border: 1px solid var(--gray-color);
+  overflow-x: scroll;
+}
+
+#field {
+  margin: 20px;
+  height: calc(100% - 40px);
+  background-color: yellow;
+}
+
+.calculator-panel {
+  justify-content: flex-end;
+  margin-top: 20px;
+  align-self: flex-end;
+  display: flex;
+  width: 100%;
+  height: 80px;
+}
+
+.button-calculator {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.button-calculator button {
+  border: none;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  height: 30px;
+  width: 125px;
+  margin-right: 10px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  background-color: var(--red-color);
+  border-radius: 4px;
+}
+
 </style>
-
