@@ -1,4 +1,4 @@
-import { default as tracer } from './tracer';
+import { default as tracer } from '@/utils/tracer';
 
 // This function translate mm to px
 export function getSizeX(sizeX, sizeYOld, sizeYNew, factor) {

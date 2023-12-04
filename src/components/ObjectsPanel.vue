@@ -1,13 +1,9 @@
 <!--
 TODO
  изучить:
-  жизненный цикл компонентов
   react.js
   async await (js)
   ES
-  StickersCalculator 20/366
-  при наведении выводить полное название файла (title)
-  фильтры
 -->
 
 
@@ -15,9 +11,11 @@ TODO
   <div class="stickers-calculator">
     <nav>
       <!-- Objects.vue -->
-      <div class="objects">
-        <!-- Example of object -->
-        <Item v-for="i in count" :id-export="objects[i-1][0]" :sizeX-export="objects[i-1][1]" :sizeY-export="objects[i-1][2]" :image-export="objects[i-1][3]" :name-export="objects[i-1][4]" :ext-export="objects[i-1][5]"></Item>
+      <div class="objects-field">
+        <div class="objects">
+          <!-- Example of object -->
+          <Item v-for="i in count" :id-export="objects[i-1][0]" :sizeX-export="objects[i-1][1]" :sizeY-export="objects[i-1][2]" :image-export="objects[i-1][3]" :name-export="objects[i-1][4]" :ext-export="objects[i-1][5]"></Item>
+        </div>
       </div>
 
       <div class="input-wrapper">
@@ -51,31 +49,24 @@ TODO
 
 import Item from './Object.vue'
 import {ref, reactive, onMounted} from "vue";
-//import {get_pos1, get_pos2} from "@/utils/get_coordinates";
-
-import { get_pos1, quickSortObj } from "@/utils/test";
-import {convertPxToMm as pxInMm} from "@/utils/pxInMm";
-import { multiplyImage } from "@/utils/multiplyImage";
-import { getSizeX } from "@/utils/getSizeX";
-//import "@/utils/canvas2svg";
-
+import { get_pos1 } from "../utils/algorithm";
+import {convertPxToMm as pxInMm} from "../utils/pxInMm";
+import { multiplyImage } from "../utils/multiplyImage";
+import { getSizeX } from "../utils/getSizeX";
+//import "../utils/canvas2svg";
 // import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
-import { default as tracer } from '@/utils/tracer';
+import { objects } from '../main';
+
 
 
 // Информация о холсте
 const list = reactive({
-
   space: ref(5),
   listX: ref(602),
-
   listY: ref(0),
   outputSVG: ref(false)
 })
 const count = ref(0)
-
-// Список данных всех загруженных изображений
-const objects = ref([])
 
 // Список данных, которые пойдут на обработку
 const exportData = ref([])
@@ -83,23 +74,17 @@ const exportData = ref([])
 // Список обработанных данных
 const importData = ref([]) // [id.string, positionX:int, positionY:string]
 
-
 const multiply = ref(0)
-const canvasSize = ref([0, 0])
-const pxToMm = ref(0)
 
 
 
 onMounted(() => {
   multiply.value = multiplyImage(document.getElementById("field").offsetHeight, list.listX);
-  canvasSize.value[0] = document.getElementById("field").offsetWidth;
-  canvasSize.value[1] = document.getElementById("field").offsetHeight;
-  pxToMm.value = 96 / 25.4;
 })
 
 
 
-const countImages = (multiply, canvasHeight) => {
+const countImages = () => {
   let data = []
   for (let i = 0; i < objects.value.length; i++) {
     for (let j = 0; j < objects.value[i][6]; j++) {
@@ -114,22 +99,20 @@ const draw = () => {
   console.log('draw called');
   let canvas = document.getElementById("field");
   let ctx = canvas.getContext("2d");
-  exportData.value = countImages(multiply, canvas.offsetHeight);
+  exportData.value = countImages();
   importData.value = get_pos1(list.space, list.listX, list.listY, exportData.value)
   console.log(importData.value.length)
-
   if (importData.value.length > 0) { list.outputSVG = true }
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < importData.value.length; i++) {
-
     let img = new Image();
     img.src = exportData.value[i][3];
     ctx.drawImage(img, importData.value[i][1], importData.value[i][2], exportData.value[i][1], exportData.value[i][2]);
-
   }
 }
 
 const readFile = (event) => {
-  tracer.debug('readFile called');
   //let inputFile = document.getElementById('input-file');
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
@@ -164,9 +147,10 @@ const readFileM = ( inputFile ) => {
         image.onload = () => {
           let fileExtension = inputFile.target.files[i]['name'].split('.').at(-1);
           let fileName = inputFile.target.files[i]['name'].slice(0, ((fileExtension.length * -1) - 1));
-          let sizeY = pxInMm(image.height * multiply.value);
+          let sizeY = pxInMm(image.height * multiply.value, list.listX);
           let sizeX = getSizeX(image.width, image.height, sizeY, multiply.value);
-          //exportData.value.push([count.value, image.width, image.height]);
+          // let sizeX = image.width;
+          // let sizeY = image.height;
           objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, 1, '']);
           console.log(objects.value)
           console.log(multiply.value)
@@ -195,7 +179,7 @@ nav {
   flex-direction: column;
 }
 
-.objects {
+.objects-field {
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
@@ -204,6 +188,12 @@ nav {
   border-radius: 10px;
   border: 1px solid var(--gray-color);
   margin-bottom: 10px;
+}
+
+.objects {
+  display: flex;
+  flex-direction: column;
+  flex: auto;
 }
 
 .input-wrapper {
