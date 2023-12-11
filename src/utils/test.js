@@ -1,20 +1,20 @@
 import { default as tracer } from '@/utils/tracer';
 
-function quickSortPK(arr) {
-    tracer.debug('quickSortPK called');
-    if (arr.length < 2) return arr;
-    let pivot = arr[0];
-    const left = [];
-    const right = [];
-    for (let i = 1; i < arr.length; i++) {
-        if (pivot[0][0] > arr[i][0][0]) {
-            left.push(arr[i]);
-        } else {
-            right.push(arr[i]);
-        }
-    }
-    return quickSortPK(left).concat([pivot], quickSortPK(right));
-}
+// function quickSortPK(arr) {
+//     tracer.debug('quickSortPK called');
+//     if (arr.length < 2) return arr;
+//     let pivot = arr[0];
+//     const left = [];
+//     const right = [];
+//     for (let i = 1; i < arr.length; i++) {
+//         if (pivot[0][0] > arr[i][0][0]) {
+//             left.push(arr[i]);
+//         } else {
+//             right.push(arr[i]);
+//         }
+//     }
+//     return quickSortPK(left).concat([pivot], quickSortPK(right));
+// }
 
 
 function SortPK(arr) {
@@ -65,7 +65,7 @@ export function get_pos1 (space, x_list, y_list, objs) {
     // var objs = Object.create(objstt)
     tracer.debug('get_pos1 called');
     let coordinates = [];
-    let PK = [[[0, 0], [10000, x_list]]];
+    let PK = [[[0, 0], [100000, x_list]]];
     if (y_list === 0) {
         let p = 0;
         objs = quickSortObj(objs)
@@ -73,10 +73,9 @@ export function get_pos1 (space, x_list, y_list, objs) {
         let fs = 0;
         while (i<objs.length) {
             let chex_push = false
-            console.log('rrrrrr')
             fs++
             while (p<PK.length) {
-                if (objs[i][1]+(space*2)<PK[0][1][0] && objs[i][2]+(space*2)<PK[0][1][1]) {
+                if (objs[i][1]+(space*2)<=PK[0][1][0] && objs[i][2]+(space*2)<=PK[0][1][1]) {
                     // ---------------
                     coordinates.push([objs[i][0], PK[0][0][0]+space, PK[0][0][1]+space]);
                     PK.push([ // ++
@@ -92,7 +91,7 @@ export function get_pos1 (space, x_list, y_list, objs) {
 
 
 
-                    // Проверка на пересечение объекта контейнеров (вроде тут всё ок )
+                    // Проверка на пересечение объекта контейнеров
                     let z = 0
                     let PK_del = [] // инфа о удалёных конейнирах
                     let chek_pos = false
