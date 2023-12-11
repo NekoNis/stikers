@@ -1,44 +1,77 @@
 <script setup>
 
 import {reactive} from "vue";
+import {convertPxToMm as pxInMm} from "@/utils/pxInMm";
+import {getSizeX} from "@/utils/getSizeX";
+import {objects, multiply, list} from '../main';
 
 let props = defineProps( {
+  indexExport: Number,
   idExport: Number,
   imageExport: String,
   nameExport: String,
   extExport: String,
   sizeXExport: Number,
   sizeYExport: Number,
+  nativeXExport: Number,
+  nativeYExport: Number,
+  factorMM: Number
 })
 
 const dataImage = reactive({
+  indexExport: props.indexExport,
   openPanel: 'object-hidden',
   openPanelButton: 'hidden',
   countImage: 1,
   widthImage: props.sizeXExport,
   heightImage: props.sizeYExport,
+  widthNative: props.nativeXExport,
+  heightNative: props.nativeYExport,
+  factorMM: props.factorMM
 })
 
 
 
 
 const plusFunc = (variable, factor) => {
-  dataImage[variable] += 1 * factor;
+  if (variable !== 'countImage') {
+    objects.value[dataImage.indexExport][7] += 1 * factor;
+    console.log(objects.value[dataImage.indexExport][7])
+    dataImage.heightImage = pxInMm(objects.value[dataImage.indexExport][9] * multiply.value, list.listX, objects.value[dataImage.indexExport][7]);
+    let sizeY = dataImage.heightImage
+    dataImage.widthImage = getSizeX(objects.value[dataImage.indexExport][8], objects.value[dataImage.indexExport][9], sizeY, multiply.value);
+    objects.value[dataImage.indexExport][1] = dataImage.widthImage;
+    objects.value[dataImage.indexExport][2] = dataImage.heightImage;
+  } else {
+    dataImage.countImage += 1 * factor;
+    objects.value[dataImage.indexExport][6] = dataImage.countImage;
+  }
 }
 
 const minusFunc = (variable, factor) => {
   if (dataImage[variable] >= 0) {
-    dataImage[variable] -= 1 * factor;
+    if (variable !== 'countImage') {
+      objects.value[dataImage.indexExport][7] -= 1 * factor;
+      console.log(objects.value[dataImage.indexExport][7])
+      dataImage.heightImage = pxInMm(objects.value[dataImage.indexExport][9] * multiply.value, list.listX, objects.value[dataImage.indexExport][7]);
+      let sizeY = dataImage.heightImage
+      dataImage.widthImage = getSizeX(objects.value[dataImage.indexExport][8], objects.value[dataImage.indexExport][9], sizeY, multiply.value);
+      objects.value[dataImage.indexExport][1] = dataImage.widthImage;
+      objects.value[dataImage.indexExport][2] = dataImage.heightImage;
+    } else {
+      dataImage.countImage -= 1 * factor;
+      objects.value[dataImage.indexExport][6] = dataImage.countImage;
+    }
   }
 }
 
 const panelView = () => {
-  if (dataImage.openPanel == 'object-hidden') {
+  if (dataImage.openPanel === 'object-hidden') {
     dataImage.openPanel = 'object-showed';
   } else {
     dataImage.openPanel = 'object-hidden';
   }
-  if (dataImage.openPanelButton == 'hidden') {
+  if (dataImage.openPanelButton === 'hidden') {
     dataImage.openPanelButton = 'showed';
   } else {
     dataImage.openPanelButton = 'hidden';

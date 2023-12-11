@@ -14,7 +14,7 @@ TODO
       <div class="objects-field">
         <div class="objects">
           <!-- Example of object -->
-          <Item v-for="i in count" :id-export="objects[i-1][0]" :sizeX-export="objects[i-1][1]" :sizeY-export="objects[i-1][2]" :image-export="objects[i-1][3]" :name-export="objects[i-1][4]" :ext-export="objects[i-1][5]"></Item>
+          <Item v-for="i in count" :index-export="i-1" :id-export="objects[i-1][0]" :sizeX-export="objects[i-1][1]" :sizeY-export="objects[i-1][2]" :image-export="objects[i-1][3]" :name-export="objects[i-1][4]" :ext-export="objects[i-1][5]" :factorMM="objects[i-1][7]" :native-x-export="objects[i-1][8]" :native-y-export="objects[i-1][9]" :multiply="multiply"></Item>
         </div>
       </div>
 
@@ -55,17 +55,11 @@ import { multiplyImage } from "../utils/multiplyImage";
 import { getSizeX } from "../utils/getSizeX";
 //import "../utils/canvas2svg";
 // import * as saveSvgAsPng from "https://cdn.skypack.dev/save-svg-as-png@1.4.17";
-import { objects } from '../main';
+import { objects, multiply, list } from '../main';
 
 
 
-// Информация о холсте
-const list = reactive({
-  space: ref(5),
-  listX: ref(602),
-  listY: ref(0),
-  outputSVG: ref(false)
-})
+
 const count = ref(0)
 
 // Список данных, которые пойдут на обработку
@@ -73,8 +67,6 @@ const exportData = ref([])
 
 // Список обработанных данных
 const importData = ref([]) // [id.string, positionX:int, positionY:string]
-
-const multiply = ref(0)
 
 
 
@@ -145,13 +137,16 @@ const readFileM = ( inputFile ) => {
         let image = new Image();
         image.src = imageURL;
         image.onload = () => {
+          let factorMM = 50;
           let fileExtension = inputFile.target.files[i]['name'].split('.').at(-1);
           let fileName = inputFile.target.files[i]['name'].slice(0, ((fileExtension.length * -1) - 1));
-          let sizeY = pxInMm(image.height * multiply.value, list.listX);
-          let sizeX = getSizeX(image.width, image.height, sizeY, multiply.value);
+          let nativeX = image.width;
+          let nativeY = image.height;
+          let sizeY = pxInMm(nativeY * multiply.value, list.listX, factorMM);
+          let sizeX = getSizeX(nativeX, nativeY, sizeY, multiply.value);
           // let sizeX = image.width;
           // let sizeY = image.height;
-          objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, 1, '']);
+          objects.value.push([count.value, sizeX, sizeY, image.src, fileName, fileExtension, 1, factorMM, nativeX, nativeY, '']);
           console.log(objects.value)
           console.log(multiply.value)
           count.value++;
