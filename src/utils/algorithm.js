@@ -73,7 +73,6 @@ export function get_pos1 (space, x_list, y_list, objs) {
         let fs = 0;
         while (i<objs.length) {
             let chex_push = false
-            console.log('rrrrrr')
             fs++
             while (p<PK.length) {
                 if (objs[i][1]+(space*2)<=PK[0][1][0] && objs[i][2]+(space*2)<=PK[0][1][1]) {
